@@ -76,7 +76,7 @@ ggplot(data@meta.data, aes(UMAP_1, UMAP_2, color = nFeature_RNA)) +
   geom_point() + scale_color_viridis_b()
 
 ggplot(data@meta.data, aes(UMAP_1, UMAP_2, color = percent.mt)) +
-  geom_point() + scale_color_viridis_b()
+  geom_point() + scale_color_viridis_c()
 
 
 
