@@ -1,0 +1,445 @@
+---
+title: "Normalization comparison"
+author: "M. SCAVINO"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "/Users/mscavino/PreprocessingComparison/")
+```
+
+
+
+```{r echo = FALSE, message=FALSE}
+# Include libraries
+
+library(Seurat)
+library(tidyverse)
+library(dplyr)
+library(stringr)
+library(cowplot)
+library(viridis)
+library(sctransform)
+library(glmGamPoi)
+library(UpSetR)
+```
+
+---
+
+Le but de ce document est de comparer différents paramètres et différentes méthodes de normalisation pour voir leur impact sur les analyses à postériori. Nous allons comparer 2 méthodes de normalisation :
+
+- La fonction `NormalizeData` de Seurat avec différentes valeurs de paramètres
+- La fonction `SCTransform` du package sctransform
+
+Pour que la comparaison soit pertinente, tous les autres paramètres seront identiques (résolution des clusters, nombre de dimensions, seuil pour l'analyse de gènes DE, etc...)
+
+---
+
+La normalisation sert à enlever le biais expérimental (capture d'ADNc, amplification PCR, ...) entre les cellules qui 
+provoquent des différences de couverture entre les librairies.
+
+---
+
+```{r}
+# Loading data
+seu <- Read10X("data/filtered_feature_bc_matrix/")
+data <- CreateSeuratObject(seu)
+
+```
+
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, include=FALSE}
+# Default normalization (Log Normalize)
+data_LN <- NormalizeData(data,verbose = FALSE)
+data_LN <- FindVariableFeatures(data_LN, selection.method = "vst", nfeatures = 2000, verbose = FALSE)
+data_LN <- ScaleData(data_LN,features = rownames(data_LN))
+data_LN <- RunPCA(data_LN)
+data_LN <- RunTSNE(data_LN)
+data_LN <- RunUMAP(data_LN, dims = 1:50)
+
+data_LN <- FindNeighbors(data_LN)
+data_LN <- FindClusters(data_LN)
+```
+
+
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, include=FALSE}
+# Centered log ratio features
+data_CLR <- NormalizeData(data, verbose = FALSE, normalization.method = "CLR")
+data_CLR <- FindVariableFeatures(data_CLR, selection.method = "vst", nfeatures = 2000, verbose = FALSE)
+data_CLR <- ScaleData(data_CLR,features = rownames(data_CLR))
+data_CLR <- RunPCA(data_CLR)
+data_CLR <- RunTSNE(data_CLR)
+data_CLR <- RunUMAP(data_CLR, dims = 1:50)
+
+data_CLR <- FindNeighbors(data_CLR)
+data_CLR <- FindClusters(data_CLR)
+```
+
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, include=FALSE}
+# Centered log ratio cells
+data_CLRc <- NormalizeData(data, verbose = FALSE, normalization.method = "CLR", margin = 2)
+data_CLRc <- FindVariableFeatures(data_CLRc, selection.method = "vst", nfeatures = 2000, verbose = FALSE)
+data_CLRc <- ScaleData(data_CLRc,features = rownames(data_CLRc))
+data_CLRc <- RunPCA(data_CLRc)
+data_CLRc <- RunTSNE(data_CLRc)
+data_CLRc <- RunUMAP(data_CLRc, dims = 1:50)
+
+data_CLRc <- FindNeighbors(data_CLRc)
+data_CLRc <- FindClusters(data_CLRc)
+```
+
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, include=FALSE}
+# Relative counts
+data_RC <- NormalizeData(data, verbose = FALSE, normalization.method = "RC", scale.factor = 1e6)
+data_RC <- FindVariableFeatures(data_RC, selection.method = "vst", nfeatures = 2000, verbose = FALSE)
+data_RC <- ScaleData(data_RC,features = rownames(data_RC))
+data_RC <- RunPCA(data_RC)
+data_RC <- RunTSNE(data_RC)
+data_RC <- RunUMAP(data_RC, dims = 1:50)
+
+data_RC <- FindNeighbors(data_RC)
+data_RC <- FindClusters(data_RC)
+```
+
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, include=FALSE}
+# SCTransform default
+data_SC <- SCTransform(data)
+# data_SC <- FindVariableFeatures(data_SC, selection.method = "vst", nfeatures = 2000, verbose = FALSE)
+# data_SC <- ScaleData(data_SC,features = rownames(data_SC))
+data_SC <- RunPCA(data_SC)
+data_SC <- RunTSNE(data_SC)
+data_SC <- RunUMAP(data_SC, dims = 1:50)
+
+data_SC <- FindNeighbors(data_SC)
+data_SC <- FindClusters(data_SC)
+```
+
+
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, include=FALSE}
+# SCTransform with GLM Gamma Pois
+data_SCGLM <- SCTransform(data, method = "glmGamPoi")
+# data_SCGLM <- FindVariableFeatures(data_SCGLM, selection.method = "vst", nfeatures = 2000, verbose = FALSE)
+# data_SCGLM <- ScaleData(data_SCGLM,features = rownames(data_SCGLM))
+data_SCGLM <- RunPCA(data_SCGLM)
+data_SCGLM <- RunTSNE(data_SCGLM)
+data_SCGLM <- RunUMAP(data_SCGLM, dims = 1:50)
+
+data_SCGLM <- FindNeighbors(data_SCGLM)
+data_SCGLM <- FindClusters(data_SCGLM)
+```
+
+
+
+# TSNE {.tabset}
+
+## Defaut
+
+> Paramètres par défaut de la fonction `NormalizeData` de seurat. 
+Les comptages de chaque gène et de chaque cellule sont divisés par le nombre total de comptage de gène dans cette cellule
+puis ce résultat est multiplié par le scale factor (10 000 par défaut) et mis au log.
+
+```{r}
+default <- DimPlot(data_LN, reduction = "tsne")
+default
+```
+
+## CLR features
+
+> On utilise la transformation du Centered Log Ratio sur les gènes. 
+Cela signifie qu'on transforme chaque élément d'un vecteur de gène (de dimension nCells) en se basant sur le logarithme du ratio entre la valeur de cet élément et la moyenne géométrique du vecteur.
+
+```{r}
+clrf <- DimPlot(data_CLR, reduction = "tsne") 
+clrf
+```
+
+## CLR cells
+
+> On utilise la transformation du Centered Log Ratio sur les cellules. 
+Cela signifie qu'on transforme chaque élément d'un vecteur de cellule (de dimension nGenes) en se basant sur le logarithme du ratio entre la valeur de cet élément et la moyenne géométrique du vecteur.
+
+```{r}
+clrc <- DimPlot(data_CLRc, reduction = "tsne")
+clrc
+```
+
+
+## Relative count
+
+> Les comptages de gènes pour chaque cellule sont divisés par la somme des comptages et multipliés par un scale.factor (ici 1e6 pour avoir des count per millions). Les données ne sont pas mises au log.
+
+```{r}
+rc <- DimPlot(data_RC, reduction = "tsne")
+rc
+```
+
+## SCTransform
+
+> SCTransform se base sur l'observation qu'il semble y avoir une relation linéaire entre le nombre d'UMI et le nombre de gènes détectés dans une cellule. Cette méthode fit un modèle linéaire généralisé avec les UMI en variable à expliquer et la profondeur de séquençage comme variable explicative
+
+```{r}
+sct <- DimPlot(data_SC, reduction = "tsne") 
+sct
+```
+
+
+## SCTransform avec GLM
+
+> On utilise la même fonction que dans l'onglet SCTransform mais on lui spécifie un autre modèle (GLM Gamma Poisson).
+C'est supposé réduire le temps de calcul
+
+```{r}
+sctglm <- DimPlot(data_SCGLM, reduction = "tsne")
+sctglm
+```
+
+# {-}
+
+
+
+
+
+# UMAP {.tabset}
+
+## Defaut
+
+> Paramètres par défaut de la fonction `NormalizeData` de seurat. 
+Les comptages de chaque gène et de chaque cellule sont divisés par le nombre total de comptage de gène dans cette cellule
+puis ce résultat est multiplié par le scale factor (10 000 par défaut) et mis au log.
+
+```{r}
+default <- DimPlot(data_LN, reduction = "umap")
+default
+```
+
+## CLR features
+
+> On utilise la transformation du Centered Log Ratio sur les gènes. 
+Cela signifie qu'on transforme chaque élément d'un vecteur de gène (de dimension nCells) en se basant sur le logarithme du ratio entre la valeur de cet élément et la moyenne géométrique du vecteur.
+
+```{r}
+clrf <- DimPlot(data_CLR, reduction = "umap") 
+clrf
+```
+
+## CLR cells
+
+> On utilise la transformation du Centered Log Ratio sur les cellules. 
+Cela signifie qu'on transforme chaque élément d'un vecteur de cellule (de dimension nGenes) en se basant sur le logarithme du ratio entre la valeur de cet élément et la moyenne géométrique du vecteur.
+
+```{r}
+clrc <- DimPlot(data_CLRc, reduction = "umap")
+clrc
+```
+
+
+## Relative count
+
+> Les comptages de gènes pour chaque cellule sont divisés par la somme des comptages et multipliés par un scale.factor (ici 1e6 pour avoir des count per millions). Les données ne sont pas mises au log.
+
+```{r}
+rc <- DimPlot(data_RC, reduction = "umap")
+rc
+```
+
+## SCTransform
+
+> SCTransform se base sur l'observation qu'il semble y avoir une relation linéaire entre le nombre d'UMI et le nombre de gènes détectés dans une cellule. Cette méthode fit un modèle linéaire généralisé avec les UMI en variable à expliquer et la profondeur de séquençage comme variable explicative
+
+```{r}
+sct <- DimPlot(data_SC, reduction = "umap") 
+sct
+```
+
+
+## SCTransform avec GLM
+
+> On utilise la même fonction que dans l'onglet SCTransform mais on lui spécifie un autre modèle (GLM Gamma Poisson).
+C'est supposé réduire le temps de calcul
+
+```{r}
+sctglm <- DimPlot(data_SCGLM, reduction = "umap")
+sctglm
+```
+
+# {-}
+
+
+
+# Markers
+
+Pour réduire le temps de calcul, on ne s'interessera qu'aux gènes up-régulés et avec un LogFC > 0.5
+
+```{r include = FALSE}
+markers_LN <- FindAllMarkers(data_LN, only.pos = T, logfc.threshold = 0.5)
+markers_CLR <- FindAllMarkers(data_CLR, only.pos = T, logfc.threshold = 0.5)
+markers_CLRc <- FindAllMarkers(data_CLRc, only.pos = T, logfc.threshold = 0.5)
+markers_RC <- FindAllMarkers(data_RC, only.pos = T, logfc.threshold = 0.5)
+markers_SCT <- FindAllMarkers(data_SC, only.pos = T, logfc.threshold = 0.5)
+markers_SCTGLM <- FindAllMarkers(data_SCGLM, only.pos = T, logfc.threshold = 0.5)
+```
+
+
+
+```{r, include=FALSE}
+
+markers_LN <- subset(markers_LN, subset = p_val_adj < 0.05)
+markers_CLR <- subset(markers_CLR, subset = p_val_adj < 0.05)
+markers_CLRc <- subset(markers_CLRc, subset = p_val_adj < 0.05)
+markers_RC <- subset(markers_RC, subset = p_val_adj < 0.05)
+markers_SCT <- subset(markers_SCT, subset = p_val_adj < 0.05)
+markers_SCTGLM <- subset(markers_SCTGLM, subset = p_val_adj < 0.05)
+
+```
+
+
+
+```{r include=FALSE}
+all_genes <- union(markers_LN$gene, markers_CLR$gene)
+all_genes <- union(all_genes, markers_CLRc$gene)
+all_genes <- union(all_genes, markers_RC$gene)
+all_genes <- union(all_genes, markers_SCT$gene)
+all_genes <- union(all_genes, markers_SCTGLM$gene)
+```
+
+
+
+
+
+```{r include = FALSE}
+ln = c()
+clr = c()
+clrc = c()
+rc = c()
+sct = c()
+sctglm = c()
+
+
+for (gene in all_genes){
+  
+  if (gene %in% markers_LN$gene){ln <- c(ln, 1)}
+  else {ln <- c(ln, 0)}
+  
+  
+  if (gene %in% markers_CLR$gene){clr <- c(clr, 1)}
+  else {clr <- c(clr, 0)}
+  
+  if (gene %in% markers_CLRc$gene){clrc <- c(clrc, 1)}
+  else {clrc <- c(clrc, 0)}
+  
+  if (gene %in% markers_RC$gene){rc <- c(rc, 1)}
+  else {rc <- c(rc, 0)}
+  
+  if (gene %in% markers_SCT$gene){sct <- c(sct, 1)}
+  else {sct <- c(sct, 0)}
+  
+  if (gene %in% markers_SCTGLM$gene){sctglm <- c(sctglm, 1)}
+  else {sctglm <- c(sctglm, 0)}
+}
+
+```
+
+
+```{r include = FALSE}
+df  =data.frame(row.names = all_genes, ln = ln, clrf = clr, clrc = clrc, rc = rc, sct = sct, sctglm = sctglm)
+```
+
+
+
+```{r}
+upset(df, sets = c("ln", "clrf", "clrc", "rc", "sct", "sctglm"), sets.bar.color = "#56B4E9",
+order.by = "freq")
+```
+
+
+La normalisation avec les relative counts ne log-normalise pas contrairement à toutes les autres. C'est donc normal qu'on trouve un set de gènes spécifique de cette normalisation. On peut essayer de relancer l'analyse en prenant le log des counts ou on peut ignorer cette méthode également.
+
+
+
+## Si on ignore
+
+```{r include=FALSE}
+all_genes <- union(markers_LN$gene, markers_CLR$gene)
+all_genes <- union(all_genes, markers_CLRc$gene)
+all_genes <- union(all_genes, markers_SCT$gene)
+all_genes <- union(all_genes, markers_SCTGLM$gene)
+```
+
+
+```{r include = FALSE}
+ln = c()
+clr = c()
+clrc = c()
+sct = c()
+sctglm = c()
+
+
+for (gene in all_genes){
+  
+  if (gene %in% markers_LN$gene){ln <- c(ln, 1)}
+  else {ln <- c(ln, 0)}
+  
+  
+  if (gene %in% markers_CLR$gene){clr <- c(clr, 1)}
+  else {clr <- c(clr, 0)}
+  
+  if (gene %in% markers_CLRc$gene){clrc <- c(clrc, 1)}
+  else {clrc <- c(clrc, 0)}
+  
+  if (gene %in% markers_SCT$gene){sct <- c(sct, 1)}
+  else {sct <- c(sct, 0)}
+  
+  if (gene %in% markers_SCTGLM$gene){sctglm <- c(sctglm, 1)}
+  else {sctglm <- c(sctglm, 0)}
+}
+
+```
+
+
+```{r include = FALSE}
+df  = data.frame(row.names = all_genes, ln = ln, clrf = clr, clrc = clrc, sct = sct, sctglm = sctglm)
+```
+
+
+qQ
+```{r}
+upset(df, sets = c("ln", "clrf", "clrc", "sct", "sctglm"), sets.bar.color = "#56B4E9",
+order.by = "freq")
+```
+
+
+
+## Si on prend les logs.
+
+(A rajouter)
+
+
+
+
+
+> On peut voir que dans la globalité, la normalisation n'a à priori pas énormément d'impact sur les analyses à postériori
+
+---
+
+# Points à améliorer :
+
+- Utiliser un jeu de donnée où on connait les groupes (ex : Tumeur/sain) pour voir si on garde la séparation sur la UMAP
+- Faire des analyses quantitatives (Besoin du premier point pour ça)
+- La méthode de normalisation à utiliser dépend aussi du jeu de données et de ce qu'on compte en faire (integration de plusieurs jeux de données, ...)
+
+```{r}
+sessionInfo()
+```
+

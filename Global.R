@@ -13,11 +13,7 @@ library(plotly)
 library(cowplot)
 library(viridis)
 library(DoubletFinder)
-
-
 seu <- Read10X("data/filtered_feature_bc_matrix/")
-
-
 data <- CreateSeuratObject(seu)
 
 # Mets les noms des gènes en majuscule (à cause du cell cycle)
@@ -319,7 +315,6 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
-
 
 
 
