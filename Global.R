@@ -13,6 +13,9 @@ library(plotly)
 library(cowplot)
 library(viridis)
 library(DoubletFinder)
+library(cutoff)
+library(autothresholdr)
+
 seu <- Read10X("data/filtered_feature_bc_matrix/")
 data <- CreateSeuratObject(seu)
 
@@ -46,6 +49,9 @@ data <- RunTSNE(data)
 data <- RunUMAP(data, dims = 1:50)
 
 
+data <- FindNeighbors(data)
+data <- FindClusters(data)
+
 # Stocke les coordonnées des cellules sur la UMAP pour faire des ggplot
 data@meta.data["UMAP_1"] <- data[["umap"]]@cell.embeddings[,1]
 data@meta.data["UMAP_2"] <- data[["umap"]]@cell.embeddings[,2]
@@ -74,6 +80,53 @@ ggplot(data@meta.data, aes(TSNE_1, TSNE_2, color = percent.mt)) +
 # summary(bizarre$percent.mt)
 
 
+################## CUTOFF ##########################################
+
+weibull_normal = cutoff::em(data$nFeature_RNA, "weibull", "normal")
+normal_normal = cutoff::em(data$nFeature_RNA, "normal", "normal")
+gamma_normal = cutoff::em(data$nFeature_RNA, "gamma", "normal")
+
+df = data.frame()
+df["fun1", "wei_norm"] <- "dweibull"
+df['fun2', "wei_norm"] <- "dnorm"
+
+df["param1_name", "wei_norm"] <- "shape"
+df["param2_name", "wei_norm"] <- "scale"
+df["param3_name", "wei_norm"] <- "mean"
+df["param4_name", "wei_norm"] <- "sd"
+
+df["param1", "wei_norm"] <- weibull_normal$param[1]
+df["param2", "wei_norm"] <- weibull_normal$param[2]
+df["param3", "wei_norm"] <- weibull_normal$param[3]
+df["param4", "wei_norm"] <- weibull_normal$param[4]
+
+
+df["fun1", "norm_norm"] <- "dnorm"
+df['fun2', "norm_norm"] <- "dnorm"
+
+df["param1_name", "norm_norm"] <- "mean"
+df["param2_name", "norm_norm"] <- "sd"
+df["param3_name", "norm_norm"] <- "mean"
+df["param4_name", "norm_norm"] <- "sd"
+
+df["param1", "norm_norm"] <- normal_normal$param[1]
+df["param2", "norm_norm"] <- normal_normal$param[2]
+df["param3", "norm_norm"] <- normal_normal$param[3]
+df["param4", "norm_norm"] <- normal_normal$param[4]
+
+df["fun1", "gamma_norm"] <- "dgamma"
+df['fun2', "gamma_norm"] <- "dnorm"
+
+df["param1_name", "gamma_norm"] <- "shape"
+df["param2_name", "gamma_norm"] <- "rate"
+df["param3_name", "gamma_norm"] <- "mean"
+df["param4_name", "gamma_norm"] <- "sd"
+
+df["param1", "gamma_norm"] <- gamma_normal$param[1]
+df["param2", "gamma_norm"] <- gamma_normal$param[2]
+df["param3", "gamma_norm"] <- gamma_normal$param[3]
+df["param4", "gamma_norm"] <- gamma_normal$param[4]
+
 ################## PLOTLY FUNCTION #################################
 
 vline <- function(x = 0, color = "red") {
@@ -99,6 +152,7 @@ hline <- function(y = 0, color = "blue") {
     line = list(color = color)
   )
 }
+
 
 
 genes <- data.frame("gene" = rownames(data))
@@ -140,12 +194,19 @@ ui <- fluidPage(
       
     mainPanel(
       tabsetPanel(
-        tabPanel("Umap", plotOutput("umap")), 
+        tabPanel("Umap", plotOutput("umap"), plotOutput("umap_cluster")), 
         tabPanel("Tsne", plotOutput("tsne")),
         tabPanel("Pca", plotOutput("pca")),
         tabPanel("Scatter", plotOutput("scatter_mt"), plotOutput("scatter_feature")),
         tabPanel("Violin", plotOutput("violinplot")),
         tabPanel("Histogramme", plotOutput("density_mt"), plotOutput("density_feature")),
+        tabPanel("Automatic Threshold", 
+                 selectInput("distribution", label = "Distribution",
+                             choices = list(
+                                            "Normal/Normal" = "norm_norm",
+                                            "Gamma/Normal" = "gamma_norm",
+                                            "Weibull/Normal" = "wei_norm")),
+                 plotOutput("cutoff")),
         tabPanel("Plotly", plotlyOutput("test")),
         
         tabPanel("FeaturePlot",
@@ -241,6 +302,11 @@ server <- function(input, output, session) {
     
   })
   
+  output$umap_cluster <- renderPlot({
+    
+    DimPlot(data, reduction = "umap", group.by = "seurat_clusters")
+  })
+  
   # TSNE du dataset groupé par cellules gardées ou non
   output$tsne <- renderPlot({
     
@@ -299,6 +365,42 @@ server <- function(input, output, session) {
   })
   
   
+  # Histogramme et density plot des % mt avec les cutoff calculés automatiquements
+  
+  output$cutoff <- renderPlot({
+    
+    
+    p = df[, input$distribution]
+    
+    param1 = list()
+    param1[[p[3]]] = as.numeric(p[7])
+    param1[[p[4]]] = as.numeric(p[8])
+    
+    
+    param2 = list()
+    param2[[p[5]]] = as.numeric(p[9])
+    param2[[p[6]]] = as.numeric(p[10])
+    
+    
+    if (input$distribution == "norm_norm"){ to_cutoff = normal_normal }
+    else if (input$distribution == "gamma_norm"){ to_cutoff = gamma_normal}
+    else { to_cutoff = weibull_normal}
+    
+    cut_off = cutoff(to_cutoff)
+      
+    ggplot(data@meta.data, aes(x = nFeature_RNA)) + 
+      geom_histogram(aes(y = ..density..), bins = 100, fill = "#DDA0DD") + 
+      geom_density(color = "#8B0000") + 
+      stat_function(fun = p[1], n = 101, args = param1,linetype = "dashed", aes(color = "Première distribution"), alpha = 0.5, size = 0.7) +
+      stat_function(fun = p[2], n = 101, args = param2, linetype = "dashed", aes(color = "Deuxieme distribution"), alpha = 0.5, size = 0.7) +
+      ylim(0, 0.000578) + 
+      geom_vline(xintercept = cut_off["Estimate"], col = 'black', linetype = 'dashed', size = 1) + 
+      geom_text(x = 7500, y = 0.0005, label = paste0("Valeur du cutoff : ", round(cut_off["Estimate"]))) + 
+      scale_color_manual(name = "statistics", values = c("Première distribution" = "blue", "Deuxieme distribution" = "red", "Cutoff inféré" = "black")) + 
+      theme_light()
+    
+  })
+  
   
   # Feature Plot à partir d'un gène donné
   
@@ -317,9 +419,7 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 
 
-
-
-
+head(data)
 
 
  ########################## TEST ################################################
@@ -331,7 +431,8 @@ ggplot(data@meta.data, aes(x = percent.mt)) +
 ggplot(data@meta.data, aes(x = nFeature_RNA)) + 
   geom_histogram(aes(y = ..density..), bins = 200, fill = "#DDA0DD", ) + 
   geom_density(color = "#8B0000") + 
-  geom_vline(xintercept = 3000, col = "#832681") + theme_light()
+  geom_vline(xintercept = 3000, col = "#832681") + 
+  theme_light()
 
 
 
@@ -342,3 +443,7 @@ ggplot(data@meta.data, aes(x = nFeature_RNA)) +
 
 # ggplot(data_test@meta.data, aes(x = nCount_RNA, y = nFeature_RNA, color = DF.classifications_0.25_0.09_2216)) + 
 #   geom_point()
+
+
+p=df[, "wei_norm"]
+

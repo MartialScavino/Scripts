@@ -7,6 +7,9 @@ library(dplyr)
 library(stringr)
 library(PCAtools)
 library(cutoff)
+# install.packages('cutoff')
+# devtools::install_github("choisy/cutoff")
+
 
 seu <- Read10X("data/filtered_feature_bc_matrix/")
 
@@ -50,9 +53,6 @@ data[["Quality"]] <- "Good"
 data@meta.data[which(data$percent.mt> 20 & data$nFeature_RNA < 600), "Quality"] <- "Bad"
 
 
-DimPlot(data, reduction = "tsne", group.by = "Quality")
-DimPlot(data, reduction = "umap", group.by = "Quality")
-
 
 
 ##################### CLUSTERING
@@ -89,16 +89,32 @@ ggplot(data@meta.data, aes(UMAP_1, UMAP_2, color = percent.mt)) +
 ############ CUTOFF ENTRE 2 DISTRIBUTIONS
 # Demande de choisir la distribution qui te semble juste pour les 2 pics
 # ça ne marche bien qu'avec weibull (connais pas)
-test <- em(data$nFeature_RNA, "log-normal", "normal")
+test <- cutoff::em(data$nFeature_RNA, "log-normal", "normal")
 
 # hist(data$nCount_RNA, breaks = 100)
 hist(data$nFeature_RNA, probability = T, breaks = 100)
+
+lines(weibull_normal)
 lines(test)
+lines(gamma_normal)
+
+
+  
+p = df[, "wei_norm"]
+ggplot(data@meta.data, aes(x = nFeature_RNA)) + 
+  geom_histogram(aes(y = ..density..), bins = 100, fill = "#DDA0DD", ) + 
+  geom_density(color = "#8B0000") + 
+  stat_function(fun = dweibull, n = 101, args = list(shape = weibull_normal$param[1], scale = weibull_normal$param[2]),linetype = "dashed") +
+  stat_function(fun = dnorm, n = 101, args = list(mean = weibull_normal$param[3], sd = weibull_normal$param[4]), linetype = "dashed") +
+  ylim(0, 0.000578) + theme_light()
+
 
 cut_off <- cutoff(test)
+cut_off["Estimate"]
+
+abline(v = cut_off, col = "red")
 
 
-cut_off
 # weibull/normal = 1000
 # normal/normal = 4560
 # gamma/normal = 1200
@@ -130,9 +146,7 @@ auto_thresholds <- sapply(methods,
                           function(x) tryCatch(autothresholdr::auto_thresh(data$nFeature_RNA, x), 
                                                error=function(e) NA))
 
-
-auto_t
-
+names(auto_thresholds)
 
 abline(v = auto_thresholds, col = "green")
 

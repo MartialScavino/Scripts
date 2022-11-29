@@ -1,0 +1,63 @@
+---
+title: "Normalization comparison"
+author: "M. SCAVINO"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
+    toc_depth: 2
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "/Users/mscavino/PreprocessingComparison/")
+```
+
+
+
+```{r echo = FALSE, message=FALSE}
+# Include libraries
+
+library(Seurat)
+library(tidyverse)
+library(dplyr)
+library(stringr)
+library(cowplot)
+library(viridis)
+library(sctransform)
+library(glmGamPoi)
+library(UpSetR)
+library(shiny)
+library(shinyWidgets)
+```
+
+
+BLABLABALBALBALBALBA
+
+---
+
+
+BLABLABLALBALB
+
+---
+
+
+
+```{r}
+ui <- fluidPage(sliderInput('test', 'test', 10, 20, 15))
+
+
+server <- function(input, output, session){
+  
+  
+  renderText("test")
+  
+}
+
+
+shinyApp(ui, server, option = list(height = 500))
+```
+
