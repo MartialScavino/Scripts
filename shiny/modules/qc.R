@@ -1,10 +1,27 @@
 ######################### UI ############################
 
 
-UmapUI <- tabPanel("Umap", plotOutput("umap"), plotOutput("umap_cluster"))
-TsneUI <- tabPanel("Tsne", plotOutput("tsne"))
-PcaUI <- tabPanel("Pca", plotOutput("pca"))
+UmapUI <- tabPanel("Umap", plotOutput("umap"),
+                           selectInput("group_by_umap", label = "regroupement des cellules", 
+                                       choices = colnames(data@meta.data),
+                                       selected = "seurat_clusters"), 
+                           plotOutput("umap_cluster"))
+
+TsneUI <- tabPanel("Tsne", plotOutput("tsne"),
+                           selectInput("group_by_tsne", label = "regroupement des cellules",
+                                       choices = colnames(data@meta.data),
+                                       selected = "seurat_clusters"),
+                           plotOutput("tsne_cluster"))
+
+PcaUI <- tabPanel("Pca", plotOutput("pca"),
+                         selectInput("group_by_pca", label = "regroupement des cellules",
+                                     choices = colnames(data@meta.data),
+                                     selected = "seurat_clusters"),
+                         plotOutput(("pca_cluster")))
+
+
 ScatterUI <- tabPanel("Scatter", plotOutput("scatter_mt"), plotOutput("scatter_feature"))
+HeatmapUI <- tabPanel("Heatmap", plotOutput("gene_heatmap"))
 ViolinUI <- tabPanel("Violin", plotOutput("violinplot"))
 HistUI <- tabPanel("Histogramme", plotOutput("density_mt"), plotOutput("density_feature"))
 
@@ -24,10 +41,7 @@ AutoThresholdUI <- tabPanel("AutothresholdR", plotOutput('autothreshold'))
 
 ComputedThresholdUI <- tabPanel("Automatic Threshold",
                             tabsetPanel(CutOffUI, AutoThresholdUI))
-
-
-
-
+###################
 
 
 PlotlyUI <- tabPanel("Plotly", plotlyOutput("test"))
@@ -155,7 +169,7 @@ UmapSERVER <- function(input, output, session, data){
   
   output$umap_cluster <- renderPlot({
     
-    DimPlot(data, reduction = "umap", group.by = "seurat_clusters")
+    DimPlot(data, reduction = "umap", group.by = input$group_by_umap)
   })
   
   
@@ -172,6 +186,11 @@ TsneSERVER <- function(input, output, session, data){
     
   })
   
+  output$tsne_cluster <- renderPlot({
+    
+    DimPlot(data, reduction = "tsne", group.by = input$group_by_tsne)
+  })
+  
 }
 
 # PCA du dataset groupée par celulles gardées ou non
@@ -183,6 +202,11 @@ PcaSERVER <- function(input, output, session, data){
     data@meta.data[which(data$percent.mt> input$mt | data$nFeature_RNA < input$features[1] | data$nFeature_RNA > input$features[2]), "Quality"] <- "Bad"
     DimPlot(data, reduction = "pca", group.by = "Quality", cols = c("#440154", "#87CEFA"))
     
+  })
+  
+  output$pca_cluster <- renderPlot({
+    
+    DimPlot(data, reduction = "pca", group.by = input$group_by_pca)
   })
   
 }
@@ -275,9 +299,10 @@ HistAutoThresholdSERVER <- function(input, output, session, data){
     ggplot(data@meta.data, aes(x = nFeature_RNA)) + 
       geom_histogram(aes(y = ..density..), bins = 100, fill = "#DDA0DD", alpha = 0.3) + 
       geom_density(color = "#8B0000") +
-      geom_vline(data = methods_df, aes(xintercept = x, color = method)) +
+      geom_vline(data = methods_df, aes(xintercept = x, color = method), size = 0.8) +
       scale_color_manual(name = "Method", values = getPalette(17)) + 
-      theme_light()
+      theme_light() + 
+      theme(legend.position = "bottom")
     
   })
   
@@ -297,5 +322,15 @@ FeaturePlotSERVER <- function(input, output, session, data){
   
 }
 
-
+HeatmapSERVER <- function(input, output, session, data){
+  
+  
+  output$gene_heatmap <- renderPlot({
+    
+    
+    DoHeatmap(data, features = top5_markers$gene, group.by = "seurat_clusters")
+    
+  }, height = 800)
+  
+}
 

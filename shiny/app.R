@@ -21,10 +21,10 @@ library(RColorBrewer)
 
 
 
+
 # Sourcing modules
 source("Scripts/shiny/modules/preprocessing.R")
 source("Scripts/shiny/modules/qc.R")
-
 
 runApp("Scripts/shiny")
 

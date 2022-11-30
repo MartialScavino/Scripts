@@ -128,3 +128,15 @@ methods <- c("IJDefault", "Huang", "Huang2", "Intermodes", "IsoData", "Li",
 auto_thresholds <- sapply(methods,
                           function(x) tryCatch(autothresholdr::auto_thresh(data$nFeature_RNA, x), 
                                                error=function(e) NA))
+
+methods_df <- data.frame(method = methods, x = auto_thresholds)
+getPalette <- colorRampPalette(brewer.pal(8, "Set1"))
+
+
+# markers_by_clusters <- FindAllMarkers(data)
+# saveRDS(markers_by_clusters, file = "Rds/Allmarkers")
+
+markers_by_clusters <- readRDS("RDS/Allmarkers")
+top5_markers <- markers_by_clusters %>% 
+  group_by(cluster) %>% 
+  slice_max(n = 5, order_by = avg_log2FC)

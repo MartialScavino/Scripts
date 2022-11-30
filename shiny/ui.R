@@ -17,6 +17,7 @@ ui <- fluidPage(
                             TsneUI,
                             PcaUI,
                             ScatterUI,
+                            HeatmapUI,
                             ViolinUI,
                             HistUI,
                             ComputedThresholdUI,

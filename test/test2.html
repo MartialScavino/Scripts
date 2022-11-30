@@ -11,7 +11,7 @@
 
 <meta name="author" content="M. SCAVINO" />
 
-<meta name="date" content="2022-11-28" />
+<meta name="date" content="2022-11-30" />
 
 <title>Normalization comparison</title>
 
@@ -1575,24 +1575,29 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">Normalization comparison</h1>
 <h4 class="author">M. SCAVINO</h4>
-<h4 class="date">2022-11-28</h4>
+<h4 class="date">2022-11-30</h4>
 
 </div>
 
 
-<pre class="r"><code>ui &lt;- fluidPage(sliderInput(&#39;test&#39;, &#39;test&#39;, 10, 20, 15))
-
-
-server &lt;- function(input, output, session){
-  
-  
-  renderText(&quot;test&quot;)
-  
-}
-
-
-shinyApp(ui, server, option = list(height = 500))</code></pre>
-<div style="width: 100% ; height: 500px ; text-align: center; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;" class="muted well">Shiny applications not supported in static R Markdown documents</div>
+<div id="test" class="section level1 tabset">
+<h1 class="tabset">test</h1>
+<div id="section" class="section level2 tabset">
+<h2 class="tabset">1</h2>
+<div id="section-1" class="section level3">
+<h3>1.1</h3>
+</div>
+</div>
+<div id="section-2" class="section level2">
+<h2>2</h2>
+<div id="section-3" class="section level3">
+<h3>2.2</h3>
+</div>
+</div>
+</div>
+<div id="section-4" class="section level1 unnumbered">
+<h1 class="unnumbered"></h1>
+</div>
 
 
 

@@ -13,6 +13,10 @@ server <- function(input, output, session) {
   # Scatter plot du nombre de gènes exprimé en fonciton du nombre de read dans la cellule
   ScatterSERVER(input, output, session, data)
   
+  #DimHeatMap
+  HeatmapSERVER(input, output, session, data)
+  
+  
   
   # Permet d'afficher le nombre de cellule enlevées dans le dataset par les paramètre choisis
   TextSERVER(input, output, session, data)

@@ -8,7 +8,6 @@ output:
     toc: true
     toc_float: true
     toc_depth: 2
-runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
@@ -21,43 +20,61 @@ knitr::opts_knit$set(root.dir = "/Users/mscavino/PreprocessingComparison/")
 ```{r echo = FALSE, message=FALSE}
 # Include libraries
 
-library(Seurat)
-library(tidyverse)
-library(dplyr)
-library(stringr)
-library(cowplot)
-library(viridis)
-library(sctransform)
-library(glmGamPoi)
-library(UpSetR)
-library(shiny)
-library(shinyWidgets)
+# library(Seurat)
+# library(tidyverse)
+# library(dplyr)
+# library(stringr)
+# library(cowplot)
+# library(viridis)
+# library(sctransform)
+# library(glmGamPoi)
+# library(UpSetR)
+# library(shiny)
+# library(shinyWidgets)
+libray(ggalluvial)
 ```
 
 
-BLABLABALBALBALBALBA
+# test {.tabset}
 
----
-
-
-BLABLABLALBALB
-
----
+## 1 {.tabset}
 
 
+### 1.1
 
 ```{r}
-ui <- fluidPage(sliderInput('test', 'test', 10, 20, 15))
 
+df_allu <- data.frame(LN = data_LN$seurat_clusters, CLR = data_CLR$seurat_clusters)
 
-server <- function(input, output, session){
+is_same = sapply(1:length(df_allu$CLR), function(i){
   
+  return(df_allu[i, "LN"] == df_allu[i, "CLR"])
   
-  renderText("test")
-  
-}
+})
 
 
-shinyApp(ui, server, option = list(height = 500))
+df_allu["same"] <- is_same
+
+head(df_allu)
+
+ggplot(data = df_allu, aes(axis1 = LN, axis2 = CLR)) + geom_alluvium(aes(color = same)) + 
+  geom_stratum() + 
+  scale_x_discrete(limits = c("LN", "CLR")) + 
+  geom_text(stat = "stratum", aes(label = after_stat(stratum)))
+
 ```
+
+
+
+## {-}
+
+## 2
+
+### 2.2
+
+# {-}
+
+
+
+
 
