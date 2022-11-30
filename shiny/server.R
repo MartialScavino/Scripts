@@ -16,11 +16,8 @@ server <- function(input, output, session) {
   #DimHeatMap
   HeatmapSERVER(input, output, session, data)
   
-  
-  
   # Permet d'afficher le nombre de cellule enlevées dans le dataset par les paramètre choisis
   TextSERVER(input, output, session, data)
-  
   
   
   # UMAP du dataset groupée par cellules gardées ou non
@@ -32,28 +29,23 @@ server <- function(input, output, session) {
   # PCA du dataset groupée par celulles gardées ou non
   PcaSERVER(input, output, session, data)
   
-  
-  
-  
   # Plot 3D qui permet d'afficher 4 variables d'un coup (nCount, nFeatures, %mt et si on garde la cellule ou pas)
   PlotlySERVER(input, output, session, data)
-  
   
   
   # Histogramme et density plot des nFeatures et
   # Histogramme et density plot des % mt
   HistSERVER(input, output, session, data)
   
-  
-  
   # Histogramme et density plot des % mt avec les cutoff calculés automatiquements avec cutoff
   HistCutoffSERVER(input, output, session, data)
   
-  
-  # # Histogramme et density plot des % mt avec les cutoff calculés automatiquements avec autothresholdr
+  # Histogramme et density plot des % mt avec les cutoff calculés automatiquements avec autothresholdr
   HistAutoThresholdSERVER(input, output, session, data)
   
   
+  # Scatter plot pout voir les Doublets prédits par doublet finder 
+  DoubletFinderSERVER(input, output, session, data)
   
   # Feature Plot à partir d'un gène donné
   FeaturePlotSERVER(input, output, session, data)

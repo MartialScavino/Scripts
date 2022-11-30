@@ -158,15 +158,27 @@ ggplot(data@meta.data, aes(x = nFeature_RNA)) +
 ### Les resultats ne sont pas du tout concluants
 
 
+########### DOUBLET FINDER
+
+# run DoubletFinder
+
+nExp_poi <- round(0.15*length(colnames(data)))
+data <- doubletFinder_v3(data, PCs = 1:50, pN = 0.25, pK = 0.01, nExp = nExp_poi, reuse.pANN = FALSE)
+
+colnames(data@meta.data)[length(colnames(data@meta.data))] = "DoubletFinderPrediction"
+
+DimPlot(data, group.by = "DoubletFinderPrediction")
+DimPlot(data, reduction = "pca", group.by = "DoubletFinderPrediction")
+DimPlot(data, reduction = "tsne", group.by = "DoubletFinderPrediction")
 
 
+ggplot(data@meta.data, aes(nCount_RNA, nFeature_RNA, color = DoubletFinderPrediction)) +
+  geom_point() +
+  scale_color_manual(values = c("#440154", "#87CEFA"))
 
-
-
-
-
-
-
+ggplot(data@meta.data, aes(nCount_RNA, percent.mt, color = DoubletFinderPrediction)) + 
+  geom_point() +
+  scale_color_manual(values = c("#440154", "#87CEFA"))
 
 ############################## DIMENSION REDUCTION #############################
 
@@ -191,7 +203,17 @@ ggplot(data@meta.data, aes(x = nFeature_RNA)) +
 #   #geom_vline(xintercept = horn$n, col = "blue")
 
 
-
+# # Find significant PCs
+# stdv <- mouse.sample[["pca"]]@stdev
+# sum.stdv <- sum(mouse.sample[["pca"]]@stdev)
+# percent.stdv <- (stdv / sum.stdv) * 100
+# cumulative <- cumsum(percent.stdv)
+# co1 <- which(cumulative > 90 & percent.stdv < 5)[1]
+# co2 <- sort(which((percent.stdv[1:length(percent.stdv) - 1] - 
+#                      percent.stdv[2:length(percent.stdv)]) > 0.1), 
+#             decreasing = T)[1] + 1
+# min.pc <- min(co1, co2)
+# min.pc
 
 
 

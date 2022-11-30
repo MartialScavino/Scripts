@@ -119,6 +119,8 @@ genes <- data.frame("gene" = rownames(data))
 
 
 
+
+#################### AUTOTHRESHOLD
 methods <- c("IJDefault", "Huang", "Huang2", "Intermodes", "IsoData", "Li", 
              "MaxEntropy", "Mean", "MinErrorI", "Minimum",
              "Moments", "Otsu", "Percentile", "RenyiEntropy", "Shanbhag",
@@ -133,6 +135,9 @@ methods_df <- data.frame(method = methods, x = auto_thresholds)
 getPalette <- colorRampPalette(brewer.pal(8, "Set1"))
 
 
+
+
+####################### MARKERS
 # markers_by_clusters <- FindAllMarkers(data)
 # saveRDS(markers_by_clusters, file = "Rds/Allmarkers")
 
@@ -140,3 +145,11 @@ markers_by_clusters <- readRDS("RDS/Allmarkers")
 top5_markers <- markers_by_clusters %>% 
   group_by(cluster) %>% 
   slice_max(n = 5, order_by = avg_log2FC)
+
+
+
+######################@ Doublet Finder
+nExp_poi <- round(0.15*length(colnames(data)))
+data <- doubletFinder_v3(data, PCs = 1:50, pN = 0.25, pK = 0.01, nExp = nExp_poi, reuse.pANN = FALSE)
+
+colnames(data@meta.data)[length(colnames(data@meta.data))] = "DoubletFinderPrediction"

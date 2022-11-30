@@ -13,14 +13,14 @@ ui <- fluidPage(
                         
                         mainPanel(
                           tabsetPanel(
-                            UmapUI, 
-                            TsneUI,
-                            PcaUI,
+                            
+                            VisualisationUI,
                             ScatterUI,
                             HeatmapUI,
                             ViolinUI,
                             HistUI,
                             ComputedThresholdUI,
+                            DoubletFinderUI,
                             PlotlyUI,
                             FeaturePlotUI) #Fin tabsetpanel
                           

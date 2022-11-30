@@ -276,16 +276,9 @@ sctglm
 
 # {-}
 
-# Alluvial plots
-
-
-
-
-
-
-
-
 # Markers
+
+On va maintenant s'intéresser aux analyses downstream. Pour ce faire on va simplement regarder les ensembles de gènes qu'on retrouve sur-représentés dans les différents clusters. On va ensuite regarder si ces ensembles de gènes sont les mêmes avec les différentes techniques de normalisation.
 
 Pour réduire le temps de calcul, on ne s'interessera qu'aux gènes up-régulés et avec un LogFC > 0.5
 
@@ -442,6 +435,9 @@ order.by = "freq")
 ```
 
 ---
+
+Une chose qu'on remarque c'est que le nombre de gènes détectés est bien supérieur pour la log-normalisation, et les centered-log ratio que pour les méthodes de normalisation de SCTransform.
+
 
 # Points à améliorer :
 
