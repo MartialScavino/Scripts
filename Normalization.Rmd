@@ -287,12 +287,31 @@ A rajouter
 Pour réduire le temps de calcul, on ne s'interessera qu'aux gènes up-régulés et avec un LogFC > 0.5
 
 ```{r include = FALSE}
-markers_LN <- FindAllMarkers(data_LN, only.pos = T, logfc.threshold = 0.5)+
-markers_CLR <- FindAllMarkers(data_CLR, only.pos = T, logfc.threshold = 0.5)
-markers_CLRc <- FindAllMarkers(data_CLRc, only.pos = T, logfc.threshold = 0.5)
-markers_RC <- FindAllMarkers(data_RC, only.pos = T, logfc.threshold = 0.5)
-markers_SCT <- FindAllMarkers(data_SC, only.pos = T, logfc.threshold = 0.5)
-markers_SCTGLM <- FindAllMarkers(data_SCGLM, only.pos = T, logfc.threshold = 0.5)
+# markers_LN <- FindAllMarkers(data_LN, only.pos = T, logfc.threshold = 0.5)+
+# markers_CLR <- FindAllMarkers(data_CLR, only.pos = T, logfc.threshold = 0.5)
+# markers_CLRc <- FindAllMarkers(data_CLRc, only.pos = T, logfc.threshold = 0.5)
+# markers_RC <- FindAllMarkers(data_RC, only.pos = T, logfc.threshold = 0.5)
+# markers_SCT <- FindAllMarkers(data_SC, only.pos = T, logfc.threshold = 0.5)
+# markers_SCTGLM <- FindAllMarkers(data_SCGLM, only.pos = T, logfc.threshold = 0.5)
+```
+
+```{r include = FALSE}
+# saveRDS(markers_LN, "../Rds/LN")
+# saveRDS(markers_CLR, "../Rds/CLR")
+# saveRDS(markers_CLRc, "../Rds/CLRc")
+# saveRDS(markers_RC, "../Rds/RC")
+# saveRDS(markers_SCT, "../Rds/SCT")
+# saveRDS(markers_SCTGLM, "../Rds/SCTGLM")
+```
+
+
+```{r}
+markers_LN <- readRDS("Rds/LN")
+markers_CLR <- readRDS("Rds/CLR")
+markers_CLRc <- readRDS("Rds/CLRc")
+markers_RC <- readRDS("Rds/RC")
+markers_SCT <- readRDS("Rds/SCT")
+markers_SCTGLM <- readRDS("Rds/SCTGLM")
 ```
 
 
@@ -306,16 +325,6 @@ markers_RC <- subset(markers_RC, subset = p_val_adj < 0.05)
 markers_SCT <- subset(markers_SCT, subset = p_val_adj < 0.05)
 markers_SCTGLM <- subset(markers_SCTGLM, subset = p_val_adj < 0.05)
 
-```
-
-
-```{r}
-saveRDS(markers_LN, "../Rds/LN")
-saveRDS(markers_CLR, "../Rds/CLR")
-saveRDS(markers_CLRc, "../Rds/CLRc")
-saveRDS(markers_RC, "../Rds/RC")
-saveRDS(markers_SCT, "../Rds/SCT")
-saveRDS(markers_SCTGLM, "../Rds/SCTGLM")
 ```
 
 

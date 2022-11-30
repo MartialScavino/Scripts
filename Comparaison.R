@@ -7,8 +7,6 @@ library(dplyr)
 library(stringr)
 library(PCAtools)
 library(cutoff)
-# install.packages('cutoff')
-# devtools::install_github("choisy/cutoff")
 
 
 seu <- Read10X("data/filtered_feature_bc_matrix/")
@@ -146,10 +144,16 @@ auto_thresholds <- sapply(methods,
                           function(x) tryCatch(autothresholdr::auto_thresh(data$nFeature_RNA, x), 
                                                error=function(e) NA))
 
-names(auto_thresholds)
 
-abline(v = auto_thresholds, col = "green")
+getPalette = colorRampPalette(brewer.pal(17, "Set1"))
+methods_df = data.frame(list(method = methods, x = auto_thresholds))
 
+ggplot(data@meta.data, aes(x = nFeature_RNA)) + 
+  geom_histogram(aes(y = ..density..), bins = 100, fill = "#DDA0DD") + 
+  geom_density(color = "#8B0000") +
+  geom_vline(data = methods_df, aes(xintercept = x, color = method)) +
+  scale_color_manual(name = "Method", values = getPalette(17)) + 
+  theme_light()
 
 ### Les resultats ne sont pas du tout concluants
 
@@ -166,7 +170,8 @@ abline(v = auto_thresholds, col = "green")
 
 ############################## DIMENSION REDUCTION #############################
 
-
+#data@assays$RNA@data # Normalisé
+#data@assays$RNA@counts # Pas normalisé
 
 # # PCA
 # data <- RunPCA(data, npcs = 50)

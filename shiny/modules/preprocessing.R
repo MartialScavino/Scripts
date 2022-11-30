@@ -1,20 +1,7 @@
 setwd("/Users/mscavino/PreprocessingComparison/")
 
 
-library(shiny)
-library(shinyWidgets)
-library(shinysky)
 
-library(Seurat)
-library(tidyverse)
-library(dplyr)
-library(stringr)
-library(plotly)
-library(cowplot)
-library(viridis)
-library(DoubletFinder)
-library(cutoff)
-library(autothresholdr)
 
 seu <- Read10X("data/filtered_feature_bc_matrix/")
 data <- CreateSeuratObject(seu)
@@ -129,3 +116,15 @@ df["param4", "gamma_norm"] <- gamma_normal$param[4]
 
 
 genes <- data.frame("gene" = rownames(data))
+
+
+
+methods <- c("IJDefault", "Huang", "Huang2", "Intermodes", "IsoData", "Li", 
+             "MaxEntropy", "Mean", "MinErrorI", "Minimum",
+             "Moments", "Otsu", "Percentile", "RenyiEntropy", "Shanbhag",
+             "Triangle", "Yen")
+
+
+auto_thresholds <- sapply(methods,
+                          function(x) tryCatch(autothresholdr::auto_thresh(data$nFeature_RNA, x), 
+                                               error=function(e) NA))

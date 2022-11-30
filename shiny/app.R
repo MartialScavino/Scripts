@@ -1,6 +1,8 @@
 setwd("/Users/mscavino/PreprocessingComparison/")
 
 
+
+# Libraries
 library(shiny)
 library(shinyWidgets)
 library(shinysky)
@@ -15,11 +17,20 @@ library(viridis)
 library(DoubletFinder)
 library(cutoff)
 library(autothresholdr)
+library(RColorBrewer)
 
 
 
+# Sourcing modules
 source("Scripts/shiny/modules/preprocessing.R")
 source("Scripts/shiny/modules/qc.R")
+
+
 runApp("Scripts/shiny")
+
+
+
+
+
 
 
