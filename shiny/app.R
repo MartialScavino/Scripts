@@ -26,4 +26,3 @@ source("Scripts/shiny/modules/qc.R")
 
 runApp("Scripts/shiny")
 
-

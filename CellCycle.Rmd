@@ -1,0 +1,98 @@
+---
+title: "Cell Cycle"
+author: "M. SCAVINO"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "/Users/mscavino/PreprocessingComparison/")
+```
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo = FALSE, message=FALSE}
+# Include libraries
+
+library(Seurat)
+library(tidyverse)
+library(dplyr)
+library(stringr)
+library(cowplot)
+library(viridis)
+library(sctransform)
+```
+
+
+
+
+```{r}
+seu_integrated <- readRDS(file = "Rds/Integration/seu_integrated.rds")
+
+length(rownames(seu_integrated@meta.data))
+
+rownames(seu_integrated@assays$RNA@counts) <- toupper(rownames(seu_integrated@assays$RNA@counts))
+rownames(seu_integrated@assays$RNA@data) <- toupper(rownames(seu_integrated@assays$RNA@data))
+
+seu_integrated <- ScaleData(seu_integrated,features = rownames(seu_integrated)) #vars.to.regress = c("S.Score", "G2M.Score")
+
+
+# Cell cycle
+s.genes <- cc.genes$s.genes
+g2m.genes <- cc.genes$g2m.genes
+
+seu_integrated <- CellCycleScoring(seu_integrated, s.features = s.genes, g2m.features = g2m.genes, set.ident = TRUE)
+
+
+# Dimension reduction
+seu_integrated <- RunPCA(seu_integrated)
+
+for (name in colnames(seu_integrated@meta.data)){
+  
+  if (length(table(seu_integrated@meta.data[,name])) < 6){
+    
+    print(name)
+    
+  }
+  
+}
+
+length(table(seu_integrated$Phase))
+
+DimPlot(seu_integrated, group.by = "Phase")
+DimPlot(seu_integrated, group.by = "Technology")
+DimPlot(seu_integrated, group.by = "Stage")
+
+
+
+seu_integrated <- RunUMAP(seu_integrated, dims = 1:20)
+
+DimPlot(seu_integrated, group.by = "Phase", shuffle = T)
+DimPlot(seu_integrated, group.by = "Technology", shuffle = T)
+DimPlot(seu_integrated, group.by = "Stage", shuffle = T)
+
+FeaturePlot(seu_integrated, "CSF3R")
+
+```
+
+
+
+```{r}
+seu_integrated <- readRDS(file = "Rds/Integration/seu_integrated.rds")
+
+length(rownames(seu_integrated@meta.data))
+
+rownames(seu_integrated@assays$RNA@counts) <- toupper(rownames(seu_integrated@assays$RNA@counts))
+rownames(seu_integrated@assays$RNA@data) <- toupper(rownames(seu_integrated@assays$RNA@data))
+
+seu_integrated <- ScaleData(seu_integrated,features = rownames(seu_integrated)) #vars.to.regress = c("S.Score", "G2M.Score")
+
+```
+

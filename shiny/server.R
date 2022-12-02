@@ -19,15 +19,8 @@ server <- function(input, output, session) {
   # Permet d'afficher le nombre de cellule enlevées dans le dataset par les paramètre choisis
   TextSERVER(input, output, session, data)
   
-  
-  # UMAP du dataset groupée par cellules gardées ou non
-  UmapSERVER(input, output, session, data)
-  
-  # TSNE du dataset groupé par cellules gardées ou non
-  TsneSERVER(input, output, session, data)
-  
-  # PCA du dataset groupée par celulles gardées ou non
-  PcaSERVER(input, output, session, data)
+  # Permet d'afficher les Dimplots avec les paramètres choisis
+  DimplotSERVER(input, output, session, data)
   
   # Plot 3D qui permet d'afficher 4 variables d'un coup (nCount, nFeatures, %mt et si on garde la cellule ou pas)
   PlotlySERVER(input, output, session, data)

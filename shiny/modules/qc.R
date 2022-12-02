@@ -1,27 +1,31 @@
 ######################### UI ############################
 
-
-UmapUI <- tabPanel("Umap", plotOutput("umap"),
-                           selectInput("group_by_umap", label = "regroupement des cellules", 
-                                       choices = colnames(data@meta.data),
-                                       selected = "seurat_clusters"), 
-                           plotOutput("umap_cluster"))
-
-TsneUI <- tabPanel("Tsne", plotOutput("tsne"),
-                           selectInput("group_by_tsne", label = "regroupement des cellules",
-                                       choices = colnames(data@meta.data),
-                                       selected = "seurat_clusters"),
-                           plotOutput("tsne_cluster"))
-
-PcaUI <- tabPanel("Pca", plotOutput("pca"),
-                         selectInput("group_by_pca", label = "regroupement des cellules",
-                                     choices = colnames(data@meta.data),
-                                     selected = "seurat_clusters"),
-                         plotOutput(("pca_cluster")))
+data$nFeature_RNA <- as.double(data$nFeature_RNA)
+keep <- sapply(colnames(data@meta.data), function(names){
+  
+  check = c("integer", "character")
+  
+  if (typeof(data@meta.data[, names]) %in% check){ return(TRUE) }
+  
+  else{ return(FALSE) }
+  
+})
+choice = names(keep[keep == T])
 
 
 VisualisationUI <- tabPanel("Visualisation",
-                            tabsetPanel(UmapUI, TsneUI, PcaUI))
+                            column(6,
+                                   selectInput("reduction", label = "Plan de visualisation", 
+                                               choices = c("umap", "tsne", "pca"),
+                                               selected = "umap")), 
+                            column(6,
+                                   selectInput("group_by", label = "regroupement des cellules", 
+                                               choices = choice,
+                                               selected = "Quality")),
+                            
+                            plotOutput("dimplot"))
+
+
 
 ScatterUI <- tabPanel("Scatter", plotOutput("scatter_mt"), plotOutput("scatter_feature"))
 HeatmapUI <- tabPanel("Heatmap", plotOutput("gene_heatmap"))
@@ -166,55 +170,14 @@ TextSERVER <- function(input, output, session, data) {
 
 # UMAP du dataset groupée par cellules gardées ou non et
 # UMAP du dataset groupée par ce qu'on veut
-UmapSERVER <- function(input, output, session, data){
-  output$umap <- renderPlot({
+DimplotSERVER <- function(input, output, session, data){
+  
+  output$dimplot <- renderPlot({
     
     data$Quality <- "Good"
     data@meta.data[which(data$percent.mt> input$mt | data$nFeature_RNA < input$features[1] | data$nFeature_RNA > input$features[2]), "Quality"] <- "Bad"
-    DimPlot(data, reduction = "umap", group.by = "Quality", cols = c("#440154", "#87CEFA"))
+    DimPlot(data, reduction = input$reduction, group.by = input$group_by)
     
-  })
-  
-  output$umap_cluster <- renderPlot({
-    
-    DimPlot(data, reduction = "umap", group.by = input$group_by_umap)
-  })
-  
-  
-}
-
-# TSNE du dataset groupé par cellules gardées ou non
-TsneSERVER <- function(input, output, session, data){
-  
-  output$tsne <- renderPlot({
-    
-    data$Quality <- "Good"
-    data@meta.data[which(data$percent.mt> input$mt | data$nFeature_RNA < input$features[1] | data$nFeature_RNA > input$features[2]), "Quality"] <- "Bad"
-    DimPlot(data, reduction = "tsne", group.by = "Quality", cols = c("#440154", "#87CEFA"))
-    
-  })
-  
-  output$tsne_cluster <- renderPlot({
-    
-    DimPlot(data, reduction = "tsne", group.by = input$group_by_tsne)
-  })
-  
-}
-
-# PCA du dataset groupée par celulles gardées ou non
-PcaSERVER <- function(input, output, session, data){
-  
-  output$pca <- renderPlot({
-    
-    data$Quality <- "Good"
-    data@meta.data[which(data$percent.mt> input$mt | data$nFeature_RNA < input$features[1] | data$nFeature_RNA > input$features[2]), "Quality"] <- "Bad"
-    DimPlot(data, reduction = "pca", group.by = "Quality", cols = c("#440154", "#87CEFA"))
-    
-  })
-  
-  output$pca_cluster <- renderPlot({
-    
-    DimPlot(data, reduction = "pca", group.by = input$group_by_pca)
   })
   
 }

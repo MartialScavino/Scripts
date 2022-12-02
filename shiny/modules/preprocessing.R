@@ -10,24 +10,24 @@ data <- CreateSeuratObject(seu)
 rownames(data@assays$RNA@counts) <- toupper(rownames(data@assays$RNA@counts))
 rownames(data@assays$RNA@data) <- toupper(rownames(data@assays$RNA@data))
 
+# Cell cycle
+s.genes <- cc.genes$s.genes
+g2m.genes <- cc.genes$g2m.genes
+
+data <- CellCycleScoring(data, s.features = s.genes, g2m.features = g2m.genes, set.ident = TRUE)
+
 
 data <- NormalizeData(data,verbose = FALSE)
 
 
 # Find and scale variable genes
 data <- FindVariableFeatures(data, selection.method = "vst", nfeatures = 2000, verbose = FALSE)
-data <- ScaleData(data,features = rownames(data))
+
+data <- ScaleData(data,features = rownames(data)) #vars.to.regress = c("S.Score", "G2M.Score")
 
 
 data[["percent.mt"]] <- PercentageFeatureSet(data, pattern = "^MT-")
 data[["Quality"]] <- "Good"
-
-
-# Cell cycle
-s.genes <- cc.genes$s.genes
-g2m.genes <- cc.genes$g2m.genes
-
-data <- CellCycleScoring(data, s.features = s.genes, g2m.features = g2m.genes, set.ident = TRUE)
 
 
 # Dimension reduction
@@ -141,7 +141,7 @@ getPalette <- colorRampPalette(brewer.pal(8, "Set1"))
 # markers_by_clusters <- FindAllMarkers(data)
 # saveRDS(markers_by_clusters, file = "Rds/Allmarkers")
 
-markers_by_clusters <- readRDS("RDS/Allmarkers")
+markers_by_clusters <- readRDS("RDS/Shiny/Allmarkers")
 top5_markers <- markers_by_clusters %>% 
   group_by(cluster) %>% 
   slice_max(n = 5, order_by = avg_log2FC)

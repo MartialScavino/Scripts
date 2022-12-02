@@ -276,6 +276,7 @@ sctglm
 
 # {-}
 
+
 # Markers
 
 On va maintenant s'intéresser aux analyses downstream. Pour ce faire on va simplement regarder les ensembles de gènes qu'on retrouve sur-représentés dans les différents clusters. On va ensuite regarder si ces ensembles de gènes sont les mêmes avec les différentes techniques de normalisation.
@@ -283,7 +284,7 @@ On va maintenant s'intéresser aux analyses downstream. Pour ce faire on va simp
 Pour réduire le temps de calcul, on ne s'interessera qu'aux gènes up-régulés et avec un LogFC > 0.5
 
 ```{r include = FALSE}
-# markers_LN <- FindAllMarkers(data_LN, only.pos = T, logfc.threshold = 0.5)+
+#markers_LN <- FindAllMarkers(data_LN, only.pos = T, logfc.threshold = 0.5)
 # markers_CLR <- FindAllMarkers(data_CLR, only.pos = T, logfc.threshold = 0.5)
 # markers_CLRc <- FindAllMarkers(data_CLRc, only.pos = T, logfc.threshold = 0.5)
 # markers_RC <- FindAllMarkers(data_RC, only.pos = T, logfc.threshold = 0.5)
@@ -302,12 +303,12 @@ Pour réduire le temps de calcul, on ne s'interessera qu'aux gènes up-régulés
 
 
 ```{r}
-markers_LN <- readRDS("Rds/LN")
-markers_CLR <- readRDS("Rds/CLR")
-markers_CLRc <- readRDS("Rds/CLRc")
-markers_RC <- readRDS("Rds/RC")
-markers_SCT <- readRDS("Rds/SCT")
-markers_SCTGLM <- readRDS("Rds/SCTGLM")
+markers_LN <- readRDS("Rds/Normalization/LN")
+markers_CLR <- readRDS("Rds/Normalization/CLR")
+markers_CLRc <- readRDS("Rds/Normalization/CLRc")
+markers_RC <- readRDS("Rds/Normalization/RC")
+markers_SCT <- readRDS("Rds/Normalization/SCT")
+markers_SCTGLM <- readRDS("Rds/Normalization/SCTGLM")
 ```
 
 

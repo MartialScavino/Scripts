@@ -1,0 +1,1372 @@
+---
+title: "2022_11_05_integrated_all_datasets"
+author: "Aurélien Voissiere"
+date: '2022-11-28'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message = FALSE}
+library(dplyr)
+library(tidyverse)
+library(Seurat)
+library(babelgene)
+library(Matrix)
+library(ggpubr)
+library(scales)
+library(EnhancedVolcano)
+
+```
+
+```{r}
+cluster_colors<- hue_pal()(28)
+phase_colors <- c("black", "palegreen3", "tomato2")
+feature_plot_colors <- c("grey", "dodgerblue", "mediumblue", "midnightblue")
+stage_color<-c("gray32","steelblue3","orange1","red")
+```
+
+# Import seu objects  
+```{r}
+# ADENOSIS
+
+##AV63_10X
+AV63_10X <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Adenosis/seu_integration_AV63_Adenosis.rds")
+AV63_10X[["Technology"]] <- "10X"
+AV63_10X[["Experiment_ID"]] <- "AV63_10X"
+AV63_10X[["Stage"]] <- "Adenosis"
+
+##AV66_10X
+AV66_10X <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Adenosis/seu_integration_AV66_Adenosis.rds")
+AV66_10X[["Technology"]] <- "10X"
+AV66_10X[["Experiment_ID"]] <- "AV66_10X"
+AV66_10X[["Stage"]] <- "Adenosis"
+
+##AV67_10X
+AV67_10X <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Adenosis/seu_integration_AV67_Adenosis.rds")
+AV67_10X[["Technology"]] <- "10X"
+AV67_10X[["Experiment_ID"]] <- "AV67_10X"
+AV67_10X[["Stage"]] <- "Adenosis"
+
+##NORMAL
+#AV52_SCD
+  AV52_SCD <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Normal/seu_integration_AV52_normal.rds")
+AV52_SCD[["Technology"]] <- "SCD"
+AV52_SCD[["Experiment_ID"]] <- "AV52_SCD"
+AV52_SCD[["Stage"]] <- "Normal"
+
+##AV58_10X
+AV58_10X <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Normal/seu_integration_AV58_Normal.rds")
+AV58_10X[["Technology"]] <- "10X"
+AV58_10X[["Experiment_ID"]] <- "AV58_10X"
+AV58_10X[["Stage"]] <- "Normal"
+
+##AV63_10X
+AV63_10X_Normal <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Normal/seu_integration_AV63_Normal.rds")
+AV63_10X_Normal[["Technology"]] <- "10X"
+AV63_10X_Normal[["Experiment_ID"]] <- "AV63_10X_Normal"
+AV63_10X_Normal[["Stage"]] <- "Normal"
+
+##AV66_10X
+AV66_10X_normal <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Normal/seu_integration_AV66_Normal.rds")
+AV66_10X_normal[["Technology"]] <- "10X"
+AV66_10X_normal[["Experiment_ID"]] <- "AV66_10X_normal"
+AV66_10X_normal[["Stage"]] <- "Normal"
+
+##AV67_10X
+AV67_10X_normal <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Adenosis/seu_integration_AV67_Adenosis.rds")
+AV67_10X_normal[["Technology"]] <- "10X"
+AV67_10X_normal[["Experiment_ID"]] <- "AV67_10X"
+AV67_10X_normal[["Stage"]] <- "Normal"
+
+#HEALTHY
+#AV38_SCD
+  AV38_SCD <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Healthy/seu_AV38_HMG3_filtered.rds")
+AV38_SCD[["Technology"]] <- "SCD"
+AV38_SCD[["Experiment_ID"]] <- "AV38_SCD"
+AV38_SCD[["Stage"]] <- "Healthy"
+
+#AV51_10X
+AV51_10X <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Healthy/seu3__AV51_10X_filtered_seurat_object.rds")
+AV51_10X[["Technology"]] <- "10X"
+AV51_10X[["Experiment_ID"]] <- "AV51_10X"
+AV51_10X[["Stage"]] <- "Healthy"
+
+#AV51_SCD
+AV51_SCD <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Healthy/seu3_filtered_Healthy_AV51_SCD.rds")
+AV51_SCD[["Technology"]] <- "SCD"
+AV51_SCD[["Experiment_ID"]] <- "AV51_SCD"
+AV51_SCD[["Stage"]] <- "Healthy"
+
+#AV53_10X
+AV53_10X <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Healthy/seu3_fAV53_Healthy_filtered_seurat_object.rds")
+AV53_10X[["Technology"]] <- "10X"
+AV53_10X[["Experiment_ID"]] <- "AV53_10X"
+AV53_10X[["Stage"]] <- "Healthy"
+
+#AV65_10X
+AV65_10X <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Healthy/seu_integration_AV65_healthy.rds")
+AV65_10X[["Technology"]] <- "10X"
+AV65_10X[["Experiment_ID"]] <- "AV65_10X"
+AV65_10X[["Stage"]] <- "Healthy"
+
+#TUMOR
+#AV41_SCD
+AV41_SCD <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Tumor/seu_AV41_tumor3_SCD_filtered.rds")
+AV41_SCD[["Technology"]] <- "SCD"
+AV41_SCD[["Experiment_ID"]] <- "AV41_SCD"
+AV41_SCD[["Stage"]] <- "Tumor"
+
+#AV44_CD45_10X
+AV44_CD45_10X <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Tumor/seu_AV44_CD45_10X_tumor_integration.rds")
+AV44_CD45_10X[["Technology"]] <- "10X"
+AV44_CD45_10X[["Experiment_ID"]] <- "AV44_CD45_10X"
+AV44_CD45_10X[["Stage"]] <- "Tumor"
+
+#AV44_Mix_10X
+AV44_Mix_10X <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Tumor/seu_AV44_Mix_10X_tumor_integration.rds")
+AV44_Mix_10X[["Technology"]] <- "10X"
+AV44_Mix_10X[["Experiment_ID"]] <- "AV44_Mix_10X"
+AV44_Mix_10X[["Stage"]] <- "Tumor"
+
+#AV44_SCD
+AV44_SCD <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Tumor/seu_AV44_SCD_tumor_integration.rds")
+AV44_SCD[["Technology"]] <- "SCD"
+AV44_SCD[["Experiment_ID"]] <- "AV44_SCD"
+AV44_SCD[["Stage"]] <- "Tumor"
+
+#AV48_10X
+AV48_10X <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Tumor/seu_AV48_tumor_10X_integration.rds")
+AV48_10X[["Technology"]] <- "10X"
+AV48_10X[["Experiment_ID"]] <- "AV48_10X"
+AV48_10X[["Stage"]] <- "Tumor"
+
+#AV48_SCD
+AV48_SCD <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Tumor/seu_AV48_tumor_integration.rds")
+AV48_SCD[["Technology"]] <- "SCD"
+AV48_SCD[["Experiment_ID"]] <- "AV48_SCD"
+AV48_SCD[["Stage"]] <- "Tumor"
+
+#AV59_10X
+AV59_10X <- read_rds("E:/Data scRNAseq ITMO souris/_Data_Integration/seurat_object_integration/Tumor/seu_AV59_tumor_integration.rds")
+AV59_10X[["Technology"]] <- "10X"
+AV59_10X[["Experiment_ID"]] <- "AV59_10X"
+AV59_10X[["Stage"]] <- "Tumor"
+
+
+```
+
+
+## Perform Integration
+ Create a list of Seurat objects
+```{r}
+list_seu <- list(AV38_SCD,AV41_SCD,AV44_CD45_10X,AV44_Mix_10X,AV44_SCD,AV48_10X,AV48_SCD,AV51_10X,AV51_SCD,AV52_SCD,AV53_10X,AV58_10X,AV59_10X,AV63_10X,AV63_10X_Normal,AV66_10X_normal, AV65_10X, AV66_10X,AV67_10X,AV67_10X_normal)
+
+write_rds(list_seu,"rds.fils/list_seurats_objects.rds")
+```
+
+Normalize and identify variable features for each dataset independantly
+```{r}
+list_seu <- lapply(X = list_seu, FUN = function(x) {
+    x <- NormalizeData(x, verbose = FALSE, 
+                       normalization.method = "LogNormalize",
+                      scale.factor = 10000)
+    x <- FindVariableFeatures(x, mean.function = ExpMean, 
+                              dispersion.function = LogVMR, 
+                              nfeatures = 2000, 
+                              verbose = FALSE)
+})
+```
+
+Select features that are repeatedly variable across datasets for integration
+```{r}
+features <- SelectIntegrationFeatures(object.list = list_seu)
+```
+    
+We then identify anchors using the `FindIntegrationAnchors()` function, which takes a list of Seurat objects as input, and use these anchors to integrate the two datasets together with `IntegrateData()` function.
+```{r}
+anchors <- FindIntegrationAnchors(object.list = list_seu,
+                                  anchor.features = features,
+                                  verbose = FALSE)
+
+write_rds(anchors,"rds.fils/anchors.rds")
+
+anchors
+```
+
+Create an ‘integrated’ data assay
+```{r}
+seu_integrated <- IntegrateData(anchorset = anchors,
+                              verbose = TRUE)
+```
+  
+Now we can run a single integrated analysis on all cells. Note that the original unmodified data still resides in the RNA assay.
+  
+Specify that we will perform downstream analysis on the corrected data
+```{r}
+DefaultAssay(seu_integrated) <- "integrated"
+
+
+head(seu_integrated[[]])
+
+# Save rds file
+write_rds(seu_integrated, "seu_integrated.rds")
+```
+
+## From scaling to PCA_INTEGRATION  
+```{r}
+# Scaling
+seu_integrated <- ScaleData(object = seu_integrated,
+                  features = rownames(seu_integrated),
+                  verbose = FALSE)
+
+# Run PCA
+seu_integrated <- RunPCA(object = seu_integrated,
+                         pc.genes = seu_integrated$var.genes,
+                         verbose = FALSE)
+```
+  
+### Visualize PCA results_INTEGRATION 
+#### Per experiment ID  
+```{r}
+# DimPlot: PC1 & 2
+DimPlot1 <- DimPlot(seu_integrated,
+        reduction = "pca",
+        group.by = "Experiment_ID",
+        shuffle = TRUE,
+        pt.size = 0.01)
+
+# DimPlot: PC3 & 4
+DimPlot2 <- DimPlot(seu_integrated,
+        reduction = "pca",
+        dims = c(3, 4),
+        group.by = "Experiment_ID",
+        shuffle = TRUE,
+        pt.size = 0.01)
+
+DimPlot1 + DimPlot2
+```
+
+#### Per technology  
+```{r}
+# DimPlot: PC1 & 2
+DimPlot3 <- DimPlot(seu_integrated,
+        reduction = "pca",
+        group.by = "Technology",
+        pt.size = 0.01, 
+        order = c("SCD", "10X"))
+
+# DimPlot: PC3 & 4
+DimPlot4 <- DimPlot(seu_integrated,
+        reduction = "pca",
+        dims = c(3, 4),
+        group.by = "Technology",
+        pt.size = 0.01, 
+        order = c("SCD", "10X"))
+
+DimPlot3 + DimPlot4
+```
+
+  
+### Per cell cycle phase__INTEGRATION   
+Cell cycle genes from Tirosh et al. 2015 (loaded with Seurat)
+```{r}
+s.genes <- cc.genes.updated.2019$s.genes
+g2m.genes <- cc.genes.updated.2019$g2m.genes
+```
+  
+Transform human to mouse genes  
+```{r}
+# Convert S genes
+s.genes_mus.musculus <- orthologs(genes = s.genes, species = "mouse") %>% 
+  pull(symbol)
+
+# Convert G2M genes
+g2m.genes_mus.musculus <- orthologs(genes = g2m.genes, species = "mouse") %>% 
+  pull(symbol)
+```
+
+Assign cell cycle scores
+```{r}
+seu_integrated <- CellCycleScoring(seu_integrated,
+                         s.features = s.genes_mus.musculus, g2m.features = g2m.genes_mus.musculus,
+                         set.ident = TRUE)
+
+head(seu_integrated[[]])
+```
+  
+Plot PCA
+```{r}
+# Define colors
+phase_colors <- c("black", "palegreen3", "tomato2")
+
+# DimPlot: PC1 & 2
+DimPlot5 <- DimPlot(seu_integrated,
+        reduction = "pca",
+        group.by = "Phase",
+        cols = alpha(phase_colors, 0.7),
+        pt.size = 0.01)
+
+# DimPlot: PC3 & 4
+DimPlot6 <- DimPlot(seu_integrated,
+        reduction = "pca",
+        dims = c(3, 4),
+        group.by = "Phase",
+        cols = alpha(phase_colors, 0.7),
+        pt.size = 0.01)
+
+DimPlot5 + DimPlot6
+
+```
+
+# Clustering
+Elbow Plot
+```{r}
+Elbowplot <- ElbowPlot(seu_integrated, ndims = 30)
+Elbowplot
+```
+Here the elbow is reached around the 15th PC.
+  
+Find neighbors
+```{r}
+set.seed(123)
+
+seu_integrated <- FindNeighbors(seu_integrated, dims = 1:20)
+```
+
+Find clusters
+```{r}
+seu_integrated <- FindClusters(seu_integrated, resolution = 0.3)
+```
+
+
+Number of cells per cluster
+```{r}
+# New df
+n_clusters <- table(seu_integrated@meta.data$seurat_clusters) %>% 
+  as.data.frame()
+
+names(n_clusters) <- c("Cluster", "n_cells")
+
+ 
+
+# Lollipop plot 
+n_clusters_plot <- n_clusters %>% 
+  ggplot(aes(x = Cluster, y = n_cells)) +
+  geom_segment(aes(x = Cluster, xend = Cluster, y = 0, yend = n_cells)) +
+  geom_point(aes(color = Cluster), size = 7) +
+  scale_color_manual(values = alpha(cluster_colors, 0.7)) + 
+  geom_text(aes(label = n_cells), size = 3) +
+  theme_bw() +
+  theme(legend.position = 'none') +
+  labs(y = "Number of cells")
+
+n_clusters_plot
+
+# Save plot
+pdf("INTEGRATION/n_clusters_plot.pdf", width = 6, height = 3)
+n_clusters_plot
+dev.off()
+```
+
+# UMAP  
+```{r}
+seu_integrated <- RunUMAP(seu_integrated, dims = 1:20)
+
+# Save rds file
+write_rds(seu_integrated, "rds.fils/integrated_seu_post_UMPA.rds")
+```
+
+Plot UMAP
+```{r}
+
+seu_integrated@meta.data$Stage <- fct_relevel(seu_integrated@meta.data$Stage, c("Healthy", "Normal", "Adenosis", "Tumor"))
+
+# Define colors 
+techno_colors <- c("SCD" = "blue",
+                   "10X" = "salmon")
+# Plot UMAP with clusters  
+UMAP_clusters_integrated <- DimPlot(seu_integrated,
+                         reduction = "umap",
+                         label = TRUE,
+                         label.size = 6,
+                         pt.size = 0.2,
+                         shuffle = TRUE,
+                         group.by = "seurat_clusters",
+                         cols = alpha(cluster_colors, 0.6))
+
+UMAP_clusters_integrated
+
+# Save plot
+pdf("INTEGRATION/UMAP_clusters.pdf", width = 8, height = 6)
+UMAP_clusters_integrated
+dev.off()
+
+# Plot UMAP per Experiment ID
+default_ggplot_4colors <- hue_pal()(20)
+UMAP_Experiment_integrated <- DimPlot(seu_integrated,
+                         reduction = "umap",
+                         label = FALSE,
+                         label.size = 6,
+                         pt.size = 0.2,
+                         shuffle = TRUE,
+                         group.by = "Experiment_ID",
+                         cols = alpha(default_ggplot_4colors, 0.6))
+
+UMAP_Experiment_integrated
+
+# Save plot
+pdf("INTEGRATION/UMAP_clusters_Experiment.pdf", width = 8, height = 6)
+UMAP_Experiment_integrated
+dev.off()
+
+# Plot UMAP per Technology
+UMAP_Technology_integrated <- DimPlot(seu_integrated,
+                         reduction = "umap",
+                         label = FALSE,
+                         label.size = 6,
+                         pt.size = 0.2,
+                         shuffle = TRUE,
+                         group.by = "Technology",
+                         cols = alpha(techno_colors, 0.6))
+
+UMAP_Technology_integrated
+
+# Save plot
+pdf("INTEGRATION/UMAP_technologies_Integrated.pdf", width = 8, height = 6)
+UMAP_Technology_integrated
+dev.off()
+
+# Plot UMAP with cell cycle phases
+UMAP_phases_integrated <- DimPlot(seu_integrated,
+                         reduction = "umap",
+                         label = FALSE,
+                         label.size = 6,
+                         pt.size = 0.2,
+                         group.by = "Phase",
+                         shuffle = TRUE,
+                         cols = alpha(c("black", "palegreen3", "tomato2"), 0.7))
+
+UMAP_phases_integrated
+
+# Save plot
+pdf("INTEGRATION/UMAP_phases_Integrated.pdf", width = 8, height = 6)
+UMAP_phases_integrated
+dev.off() 
+
+
+# Plot UMAP with stage
+UMAP_stage_integrated <- DimPlot(seu_integrated,
+                         reduction = "umap",
+                         label = FALSE,
+                         label.size = 6,
+                         pt.size = 0.1,
+                         group.by = "Stage",
+                         shuffle = TRUE,
+                         cols = stage_color)
+
+UMAP_stage_integrated
+
+# Save plot
+pdf("INTEGRATION/UMAP_stages_Integrated.pdf", width = 8, height = 6)
+UMAP_stage_integrated
+dev.off() 
+
+
+# Plot UMAP split by stage
+UMAP_split_stage <- DimPlot(seu_integrated,
+                         reduction = "umap",
+                         label = FALSE,
+                         label.size = 6,
+                         pt.size = 0.2,
+                         split.by = "Stage",
+                         shuffle = TRUE)
+
+UMAP_split_stage
+
+# Save plot
+pdf("INTEGRATION/UMAP_split_stage.pdf", width = 14, height = 6)
+UMAP_split_stage
+dev.off() 
+```
+## Cluster markers  
+Find markers of clusters: differentially expressed genes between all clusters
+```{r}
+# Identification of cluster markers (Wilcoxon test, default)
+markers <- FindAllMarkers(object = seu_integrated,
+                              min.pct = 0.25,
+                              assay = "RNA",
+                              logfc.threshold = 0.58)
+
+# Reorder columns
+markers <- markers[ , c("cluster", "gene", "pct.1", "pct.2", "avg_log2FC", "p_val", "p_val_adj")]
+
+# Filter genes with adjusted p value > 0.05
+sig_markers <- markers %>% 
+  filter(p_val_adj <= 0.05) %>% 
+  filter(avg_log2FC >= 0.58)
+
+# Save tables
+write.table(sig_markers,
+            "INTEGRATION/sig_markers_integrated.txt",
+            sep = "\t", quote = FALSE, row.names = FALSE)
+```
+
+Heatmap of the top 5 markers for each cluster
+```{r}
+# Define top 5 (by positive Log2FC)
+top5 <- sig_markers %>% 
+  group_by(cluster) %>% 
+  filter(avg_log2FC > 0) %>% 
+  top_n(n = 5, wt = avg_log2FC)
+
+# Heatmap of top 5 expression
+top5_heatmap <- DoHeatmap(seu_integrated,
+                          features = top5$gene,
+                          group.colors = alpha(cluster_colors, 0.7))
+top5_heatmap
+
+# Save plot
+pdf("INTEGRATION/Top_5_heatmap.pdf", width = 10, height = 9)
+top5_heatmap
+dev.off()
+```
+
+## QC per cluster  
+Extract QC metrics  
+```{r}
+QC_cluster <- seu_integrated@meta.data %>% 
+  dplyr::select(c(nFeature_RNA)) %>% 
+  mutate(seurat_clusters = Idents(seu_integrated)) 
+```
+  
+Violin plot of nFeatures 
+```{r}
+# Violin plot
+nFeature_box_clusters <- QC_cluster %>% 
+  ggplot(aes(x = seurat_clusters, y = nFeature_RNA, fill = seurat_clusters)) +
+  geom_boxplot(aes(colour = seurat_clusters), outlier.shape = NA) +
+  scale_color_manual(values = cluster_colors) +
+  scale_fill_manual(values = alpha(cluster_colors, 0.6)) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")  +
+  scale_y_continuous(limits = c(0, 10000), breaks = seq(0, 10000, 1000)) +
+  labs(x = "", y = "Number of expressed genes")
+
+nFeature_box_clusters
+
+# Save plot
+pdf("INTEGRATION/nFeature_boxplot_clusters.pdf", width = 6, height = 4)
+nFeature_box_clusters
+dev.off()
+```
+
+# Expression of general markers
+To distinguish epithelial, immune, fibro, endo...
+```{r}
+# Define features
+general_features <- c("Ptprc", "Epcam", "Cdh1", "Mrc2", "Thy1", "Fabp4", "Pecam1", "Eng")
+
+# Violin plot
+vln_general <- VlnPlot(object = seu_integrated,
+                             features = general_features,
+                             cols = alpha(cluster_colors, 0.7),
+                             pt.size = 0,
+                            assay = "RNA",
+                             ncol = 3)
+
+vln_general
+
+# Save plot  
+pdf("INTEGRATION/Scoring/general_features_Vln.pdf", width = 13, height = 9)
+vln_general
+dev.off()
+
+# Feature plot 
+feature_plot_colors <- c("grey", "dodgerblue", "mediumblue", "midnightblue")
+
+feat_general_integrated <- FeaturePlot(object = seu_integrated,
+                                       features = general_features,
+                                       cols = feature_plot_colors,
+                                       ncol = 3,
+                                       pt.size = 0.01,
+                                       min.cutoff = 0)
+
+feat_general_integrated
+
+# Save plot  
+pdf("INTEGRATION/Scoring/general_features_FeaturePlot.pdf", width = 12, height = 10.5)
+feat_general_integrated
+dev.off()
+```
+
+# Signature scoring using Seurat
+
+Define some signatures for immune cell subtypes
+```{r}
+markers <- list()
+
+
+markers$MoMacDC_features <- c("Lyz1", "Cd300e", "Mafb", "Batf3", "Msr1")
+markers$cDC1_features <- c("Xcr1","Clec9a")
+markers$cDC_features <- c("Itgax", "Itgam", "Cd207", "H2-Aa", "Sirpa", "Xcr1", "Ccr7", "Fscn1", "Cd274")
+markers$pDC_features <- c("Siglech", "Ccr9", "Bst2", "Pacsin1", "Tcf4")
+markers$Neutrophils_features <- c("S100a8", "S100a9", "Mmp9", "Csf3r", "Mmp8", "Cxcr2")
+markers$Basophils_features <- c("Il6", "Gata2", "Cpa3", "Ms4a2", "Fcer1a")
+markers$B_cells_features <- c("CD79a", "CD79b", "Fcmr", "Cd19", "Fcer2a", "Pax5", "Cd22")
+markers$T_cells_features <- c("Cd3d", "Cd3e", "Cd3g", "Cd28", "Cd4", "Cd8a")
+markers$NK_cells_features <- c("Gzma", "Gzmb", "Klrb1c", "Ncr1", "Klra4", "Eomes", "Fasl", "Klrk1")
+
+
+markers_T <-list()
+
+markers_T$T_features <- c("Cd3e", "Cd4", "Cd8a", "Foxp3")
+markers_T$Th1_features <- c("Tbx21", "Cxcr3", "Ccr5", "Il2", "Ifng", "Tnfa")
+markers_T$Th2_features <- c("Gata3", "Ccr3", "Ccr4", "Cxcr4", "Il4", "Il5", "Il6", "Il13")
+markers_T$Th17_features <- c("Rorc", "Cd161", "Ccr4", "Ccr6", "Il17a", "Il17f", "Il21", "Il22", "Il26")
+markers_T$Tfh_features <- c("Bcl6", "Cd69", "Cxcr5", "Ccr7", "Il6", "Il10", "Il21")
+markers_T$iTreg_features <- c("Foxp3", "Smad2", "Il2ra", "Il7r", "Il10", "Ebi3", "Tgfb1")
+
+
+
+```
+
+
+## General immune cell scoring
+```{r}
+seu_integrated <- AddModuleScore(seu_integrated,features = markers,assay = "RNA", name = c("MoMacDC_","cDC1_","cDC_","pDC_","Neutrophils_", "Basophils_","B_cells_", "T_cells_","NK_cells_"))
+
+# VlnPlot
+VlnPlot_signature_score <- VlnPlot(seu_integrated, 
+                                   features = c("MoMacDC_1","cDC1_2","cDC_3","pDC_4","Neutrophils_5", "Basophils_6","B_cells_7", "T_cells_8","NK_cells_9"),pt.size = 0)
+
+VlnPlot_signature_score
+
+# Save plot  
+pdf("INTEGRATION/Scoring/Vln_Score.pdf", width = 11, height = 9)
+VlnPlot_signature_score
+dev.off()
+
+
+# Feature plot
+feat_score <- FeaturePlot(object = seu_integrated,
+                          features = c("MoMacDC_1","cDC1_2","cDC_3","pDC_4","Neutrophils_5", "Basophils_6","B_cells_7", "T_cells_8","NK_cells_9"),
+        cols = feature_plot_colors,
+        ncol = 3,
+        pt.size = 0)
+
+feat_score
+
+# Save plot
+pdf("INTEGRATION/Scoring/feat_Score.pdf", width = 11, height = 9)
+feat_score
+dev.off()
+
+```
+
+## T cells scoring
+```{r}
+seu_integrated <- AddModuleScore(seu_integrated,features = markers_T, assay="RNA", name = c("T_","Th1_","Th2_","Th17_","Tfh_", "iTreg_"))
+
+
+Vln_score_T <- VlnPlot(seu_integrated, features = c("T_1","Th1_2","Th2_3","Th17_4","Tfh_5", "iTreg_6"), pt.size = 0)
+
+Vln_score_T
+
+# Save plot  
+pdf("INTEGRATION/Scoring/Vln_Score_T_Cells.pdf", width = 11, height = 9)
+Vln_score_T
+dev.off()
+
+feat_score_T <- FeaturePlot(object = seu_integrated,
+                            features = c("T_1","Th1_2","Th2_3","Th17_4","Tfh_5", "iTreg_6"),
+        cols = feature_plot_colors,
+        ncol = 3,
+        pt.size = 0.1)
+
+feat_score_T
+
+# Save plot
+pdf("INTEGRATION/Scoring/feat_Score_T_cells.pdf", width = 11, height = 9)
+feat_score_T
+dev.off()
+```
+
+# Expression of Zilionis et al markers  
+Definition of markers 
+```{r}
+MoMacDC_features <- c("Lyz1", "Cd300e", "Mafb", "Batf3", "Msr1")
+pDC_features <- c("Siglech", "Ccr9", "Bst2", "Pacsin1", "Tcf4")
+Neutrophils_features <- c("S100a8", "S100a9", "Mmp9", "Csf3r", "Mmp8", "Cxcr2")
+Basophils_features <- c("Il6", "Gata2", "Cpa3", "Ms4a2", "Fcer1a")
+B_cells_features <- c("CD79a", "CD79b", "Fcmr", "Cd19", "Fcer2a", "Pax5", "Cd22")
+T_cells_features <- c("Cd3d", "Cd3e", "Cd3g", "Cd28", "Cd4", "Cd8a")
+NK_cells_features <- c("Gzma", "Gzmb", "Klrb1c", "Ncr1", "Klra4", "Eomes", "Fasl", "Klrk1")
+Plasma_cells_features <- c("Igha", "Ighm", "Iglv1", "Iglc2")
+```
+## Neutrophil features  
+In mix  
+```{r}
+## Violin plot  
+vln_neutro <- VlnPlot(object = seu_integrated,
+                             features = Neutrophils_features,
+                             cols = alpha(cluster_colors, 0.7),
+                             pt.size = 0,
+                             assay = "RNA",
+                             ncol = 3)
+
+vln_neutro
+
+# Save plot  
+pdf("INTEGRATION/Zilionis_markers/Neutro_Vln.pdf", width = 13, height = 6)
+vln_neutro
+dev.off()
+
+# Feature plot 
+feat_neutro <- FeaturePlot(object = seu_integrated,
+        features = Neutrophils_features,
+        cols = feature_plot_colors,
+        ncol = 3,
+        pt.size = 0.01,
+        min.cutoff = 0)
+
+feat_neutro
+
+# Save plot  
+pdf("INTEGRATION/Zilionis_markers/Neutro_FeaturePlot.pdf", width = 12, height = 7)
+feat_neutro
+dev.off()
+```
+## Mono / macrophage / DC features  
+```{r}
+# Violin plot  
+vln_Mo_Mac_DC <- VlnPlot(object = seu_integrated,
+                             features = MoMacDC_features,
+                             cols = alpha(default_ggplot_22colors, 0.7),
+                             pt.size = 0,
+                             ncol = 3)
+
+vln_Mo_Mac_DC
+
+# Save plot  
+pdf("results/5.Zilionis_markers/MoMacDC_Vln.pdf", width = 11, height = 6)
+vln_Mo_Mac_DC
+dev.off()
+
+# Feature plot 
+feat_Mo_Mac_DC <- FeaturePlot(object = seu_integrated,
+        features = MoMacDC_features,
+        cols = feature_plot_colors,
+        ncol = 3,
+        pt.size = 0)
+
+feat_Mo_Mac_DC
+
+# Save plot  
+pdf("results/5.Zilionis_markers/MoMacDC_FeaturePlot.pdf", width = 12, height = 7)
+feat_Mo_Mac_DC
+dev.off()
+```
+
+
+
+## T cell features  
+```{r}
+# Violin plot  
+vln_T <- VlnPlot(object = seu_integrated,
+                             features = T_cells_features,
+                             cols = alpha(cluster_colors, 0.7),
+                             pt.size = 0,
+                             ncol = 3,assay="RNA")
+
+vln_T
+
+# Save plot  
+pdf("INTEGRATION/Zilionis_markers/Tcell_Vln.pdf", width = 11, height = 6)
+vln_T
+dev.off()
+
+# Feature plot 
+featT <- FeaturePlot(object = seu_integrated,
+        features = T_cells_features,
+        cols = feature_plot_colors,
+        ncol = 3,
+        pt.size = 0)
+
+featT
+
+# Save plot  
+pdf("INTEGRATION/Zilionis_markers/Tcell_FeaturePlot.pdf", width = 12, height = 7)
+featT
+dev.off()
+```
+## NK cell features  
+```{r}
+# Violin plot  
+vln_NK <- VlnPlot(object = seu_integrated,
+                             features = NK_cells_features,
+                             cols = alpha(cluster_colors, 0.7),
+                             pt.size = 0,
+                            assay = "RNA",
+                             ncol = 3)
+
+vln_NK
+
+# Save plot  
+pdf("INTEGRATION/Zilionis_markers/NK_Vln.pdf", width = 11, height = 9)
+vln_NK
+dev.off()
+
+# Feature plot 
+featNK <- FeaturePlot(object = seu_integrated,
+        features = NK_cells_features,
+        cols = feature_plot_colors,
+        ncol = 3,
+        pt.size = 0.1)
+
+featNK
+
+# Save plot  
+pdf("INTEGRATION/Zilionis_markers/NK_FeaturePlot.pdf", width = 12, height = 10.5)
+featNK
+dev.off()
+```
+
+# Expression of cDC markers  
+As cDC could be mixed with more represented myeloid populations (mono, macro), we can evaluate the expression of cDC markers to distinguish DC subsets.  
+```{r}
+# Define features 
+DC_features <- c("Itgax", "Itgam", "Cd207", "H2-Aa", "Sirpa", "Xcr1", "Ccr7", "Fscn1", "Cd274")
+
+# Violin plot
+vlnDC <- VlnPlot(object = seu_integrated,
+        features = DC_features,
+        ncol = 3,
+        pt.size = 0,
+        cols = alpha(cluster_colors, 0.8),
+        assay="RNA") 
+
+vlnDC
+
+# Save plot  
+pdf("INTEGRATION/DC_markers/cDC_features_Vln.pdf", width = 11, height = 9)
+vlnDC
+dev.off()
+
+# Feature plot 
+featDC <- FeaturePlot(object = seu_integrated,
+        features = DC_features,
+        cols = feature_plot_colors,
+        ncol = 3,
+        pt.size = 0.1)
+
+featDC
+
+# Save plot  
+pdf("INTEGRATION/DC_markers/cDC_features_FeaturePlot.pdf", width = 12, height = 10.5)
+featDC
+dev.off()
+```
+
+# Expression of muscle markers  
+As cDC could be mixed with more represented myeloid populations (mono, macro), we can evaluate the expression of cDC markers to distinguish DC subsets.  
+```{r}
+
+# Violin plot
+vlnMscl_features <- VlnPlot(object = seu_integrated,
+        features = c("Acta1","Mylpf", "Tnnt3", "Tnni2"),
+        ncol = 3,
+        pt.size = 0,
+        cols = alpha(cluster_colors, 0.8),
+        assay="RNA") 
+
+vlnMscl_features
+
+# Save plot  
+pdf("INTEGRATION/DC_markers/cDC_features_Vln.pdf", width = 11, height = 9)
+vlnDC
+dev.off()
+
+# Feature plot 
+featMscl <- FeaturePlot(object = seu_integrated,
+        features = c("Acta1","Mylpf", "Tnnt3", "Tnni2"),
+        cols = feature_plot_colors,
+        ncol = 3,
+        pt.size = 0.1)
+
+featMscl
+
+# Save plot  
+pdf("INTEGRATION/DC_markers/cDC_features_FeaturePlot.pdf", width = 12, height = 10.5)
+featDC
+dev.off()
+```
+
+
+#Rename clusters  
+```{r}
+
+
+# Rename clusters
+seu_integrated <- RenameIdents(object = seu_integrated,
+                   "0" = "Mo_Mac_c0",
+"1" = "Fibroblast_c1",
+"2" = "Epithelial_cells_c2",
+"3" = "Fibroblast_c3",
+"4" = "CD8_T_cells",
+"5" = "CD4_T_cells",
+"6" = "Mo_Mac_c6",
+"7" = "NK_cells",
+"8" = "cDC/LC",
+"9" = "Prolif_myeloids",
+"10" = "cDC1",
+"11" = "Endothelial_cells",
+"12" = "Fibroblast_c12",
+"13" = "B_cells",
+"14" = "pDC",
+"15" = "Neutrophils",
+"16" = "cDC2_c16",
+"17" = "Th17",
+"18" = "Fibroblast_c18",
+"19" = "Epithelial_cells_c19",
+"20" = "Muscle_cells",
+"21" = "prolif_lympho",
+"22" = "Mature_DC",
+"23" = "Basophils",
+"24" = "Mo_Mac_c24",
+"25" = "cDC2_c25",
+"26" = "Epithelial_cells_c26",
+"27" = "undefined")
+
+
+# Final seurat object
+write_rds(seu3, "Resultes//final_seu.rds")
+```
+  
+UMAP with new idents
+```{r}
+pop_order <- c("Epithelial_cells_c2","Epithelial_cells_c19","Epithelial_cells_c26","Endothelial_cells","Fibroblast_c1","Fibroblast_c3","Fibroblast_c12","Fibroblast_c18","Muscle_cells","CD8_T_cells","CD4_T_cells","Th17","NK_cells","prolif_lympho", "B_cells", "Mo_Mac_c0","Mo_Mac_c6",   "Mo_Mac_c24","pDC","cDC1","cDC2_c16","cDC2_c25","cDC/LC","Mature_DC","Prolif_myeloids","Neutrophils","Basophils","undefined")
+# New cluster colors
+new_cluster_colors <- c( "Epithelial_cells_c2" = "gray21",
+                         "Epithelial_cells_c19" = "gray31",
+                         "Muscle_cells" = "red" ,
+                         "Epithelial_cells_c26" = "gray58",
+                         "Endothelial_cells" = "firebrick",
+                         "Fibroblast_c1"= "chocolate3",
+                         "Fibroblast_c3" = "chocolate4"  ,
+                         "Fibroblast_c12" = "chocolate" ,
+                         "Fibroblast_c18"= "chocolate1",
+                         "CD8_T_cells"= "slateblue3" ,
+                         "CD4_T_cells" = "slateblue1",
+                         "Th17" = "slateblue4" ,
+                         "NK_cells" = "royalblue3",
+                         "prolif_lympho" = "turquoise3",
+                         "B_cells" = "tan4" ,
+                         "Neutrophils" = "hotpink",
+                         "Basophils" = "hotpink4",
+                         "Mo_Mac_c0" = "darkolivegreen4" ,
+                         "Mo_Mac_c6"= "chartreuse3" ,
+                         "Mo_Mac_c24" = "darkolivegreen2",
+                         "cDC2_c16"= "mediumpurple3",
+                         "cDC2_c25" = "mediumpurple4",
+                         "cDC/LC"="mediumpurple1",
+                         "cDC1" = "magenta" ,
+                         "pDC" = "gold",
+                         "Mature_DC"= "mediumvioletred",
+                         "Prolif_myeloids" = "plum1",
+                         "undefined" = "gray0" )
+                         
+                         
+
+# UMAP with new cluster names 
+umap_new_cluster_names <- DimPlot(seu_integrated,
+                                      reduction = "umap",
+                                      label = FALSE,
+                                      pt.size = 0.3,
+                                   cols = alpha(new_cluster_colors,0.7))
+
+umap_new_cluster_names
+
+# Save plot
+pdf("INTEGRATION/final_UMAP.pdf", width = 10, height = 5)
+umap_new_cluster_names
+dev.off()
+
+```
+BubbleGm of score
+```{r}
+Idents(seu_integrated) <- factor(Idents(seu_integrated), levels = pop_order)
+                                 
+
+                                
+
+mar<-c("Gata2","Cpa3","S100a8","S100a9","Ccr7","Fscn1","Siglech","Pacsin1","Itgam","Sirpa","Itgax","Xcr1","Cd300e","Mafb","Cd79a", "Cd79b","Ncr1","Itga2","Cd3e","Il17a","Cd4","Cd8a","Fabp4","Eng","Mrc2","Epcam")
+
+
+Bubble_score<-DotPlot(seu_integrated, features = mar, dot.scale = 8,assay="RNA") +
+  RotatedAxis()
+
+Bubble_score
+
+# Save plot
+pdf("INTEGRATION/Bubble_score.pdf", width = 10, height = 10)
+Bubble_score
+dev.off()
+```
+
+## QC per cluster  
+Extract QC metrics  
+```{r}
+QC_cluster <- seu_integrated@meta.data %>% 
+  dplyr::select(c(nFeature_RNA)) %>% 
+  mutate(cluster_ids = Idents(seu_integrated)) 
+```
+  
+Violin plot of nFeatures 
+```{r}
+# Violin plot
+nFeature_box_clusters <- QC_cluster %>% 
+  mutate(cluster_ids = fct_relevel(cluster_ids, pop_order)) %>%
+  ggplot(aes(x = cluster_ids, y = nFeature_RNA, fill = cluster_ids)) +
+  geom_boxplot(aes(colour = cluster_ids), outlier.shape = NA) +
+  scale_color_manual(values = new_cluster_colors) +
+  scale_fill_manual(values = alpha(new_cluster_colors, 0.6)) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")  +
+  scale_y_continuous(limits = c(0, 10000), breaks = seq(0, 10000, 1000)) +
+  labs(x = "", y = "Number of expressed genes")
+
+nFeature_box_clusters
+
+# Save plot
+pdf("INTEGRATION/nFeature_boxplot_clusters_final.pdf", width = 6, height = 4)
+nFeature_box_clusters
+dev.off()
+```
+
+Number of cells per cluster
+```{r}
+# New df
+n_clusters <- table(seu_integrated@meta.data$seurat_clusters) %>% 
+  as.data.frame()
+
+names(n_clusters) <- c("Cluster", "n_cells")
+
+ 
+
+# Lollipop plot 
+n_clusters_plot <- n_clusters %>% 
+  ggplot(aes(x = Cluster, y = n_cells)) +
+  geom_segment(aes(x = Cluster, xend = Cluster, y = 0, yend = n_cells)) +
+  geom_point(aes(color = Cluster), size = 7) +
+  scale_color_manual(values = alpha(cluster_colors, 0.7)) + 
+  geom_text(aes(label = n_cells), size = 3) +
+  theme_bw() +
+  theme(legend.position = 'none') +
+  labs(y = "Number of cells")
+
+n_clusters_plot
+
+# Save plot
+pdf("INTEGRATION/n_clusters_plot.pdf", width = 6, height = 3)
+n_clusters_plot
+dev.off()
+```
+# Focus on cDC1s
+Identification of cDC1
+```{r}
+#create liste of cell id from cluster 6
+cell_Id_cDC1<- seu_integrated@meta.data %>% filter(seurat_clusters == "6" ) %>% row.names()
+```
+
+Identification of cycling cDC1s
+```{r}
+stage_color<-c("gray32","steelblue3","orange1","red")
+
+# subset  to keep only cycling cells
+seu_cDC1 <- subset(seu_integrated,cells = cell_Id_cDC1)
+
+seu_cDC1
+
+seu_cDC1<-NormalizeData(object = seu_cDC1,
+                      normalization.method = "LogNormalize",
+                      scale.factor = 10000,
+                      assay="RNA")
+
+seu_cDC1 <- ScaleData(object = seu_cDC1,
+                  features = rownames(seu_cDC1),
+                  assay="RNA")
+
+seu_cDC1 <- FindVariableFeatures(object = seu_cDC1,
+                             mean.function = ExpMean,
+                             dispersion.function = LogVMR)
+
+seu_cDC1  <- RunPCA(object = seu_cDC1 ,
+                   pc.s = seu_cDC1$var.genes, 
+                   verbose = FALSE)
+
+Elbowplot <- ElbowPlot(seu_cDC1, ndims = 30)
+Elbowplot
+
+set.seed(123)
+
+seu_cDC1 <- FindNeighbors(seu_cDC1, dims = 1:5)
+
+seu_cDC1 <- FindClusters(seu_cDC1, resolution = 0.3)
+
+# UMAP
+seu_cDC1<- RunUMAP(seu_cDC1,
+                dims = 1:5)
+
+
+
+UMAP_cDC1<- DimPlot(seu_cDC1,
+        reduction = "umap",
+        label = TRUE,
+        label.size = 6,
+        pt.size = 0.5,
+        cols = alpha(cluster_17colors, 0.7))
+UMAP_cDC1
+
+pdf("Focus_cDC1//UMAP_cDC1.pdf", width = 6, height = 5)
+UMAP_cDC1
+dev.off()
+
+  # Feat cDC1 markers
+  feat_cycling_cDC1 <- FeaturePlot(object = seu_cDC1,
+          features = c("Xcr1","Clec9a"),
+          cols = feature_plot_colors,
+          ncol = 3,
+          pt.size = 0)
+  
+  feat_cycling_cDC1
+  
+  
+ # UMAP stages
+  UMAP_cDC1_stages<- DimPlot(seu_cDC1,
+        reduction = "umap",
+        label = FALSE,
+        pt.size = 0.5,
+        group.by = "Stage",
+        cols = stage_color)
+UMAP_cDC1_stages
+
+pdf("Focus_cDC1/UMAP_cDC1_stages.pdf", width = 6, height = 5)
+UMAP_cDC1_stages
+dev.off()
+  
+
+ # UMAP experiment_id
+  UMAP_cDC1_exp<- DimPlot(seu_cDC1,
+        reduction = "umap",
+        label = FALSE,
+        pt.size = 1,
+        group.by = "Experiment_ID")
+UMAP_cDC1_exp
+
+
+df_plot <- seu_cDC1@meta.data %>% 
+  dplyr::select(c("seurat_clusters", "Stage"))
+
+df_plot <- table(df_plot$seurat_clusters, df_plot$Stage) %>% 
+  as.data.frame()
+
+names(df_plot) <- c("Cluster", "Origin", "n")
+
+# Percent stacked barplot 
+percent_distrib_origin <- ggplot(df_plot,
+                             aes(x = Cluster, y = n, fill = Origin)) +
+  geom_bar(position = "fill", stat = "identity") +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Proportion of each stage per cluster", subtitle = "Percent stacked barchart",
+       x = "Seurat clusters", y = "n cells", fill = "") +
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE))+
+  scale_fill_manual(values = stage_color)
+
+percent_distrib_origin
+
+pdf("Focus_cDC1/percent_distrib_origin.pdf", width = 6, height = 5)
+percent_distrib_origin
+dev.off()
+
+
+# Find markers stage specific
+Idents(object = seu_cDC1)<-seu_cDC1@meta.data$Stage
+markers_cDC1<- FindAllMarkers(object = seu_cDC1,assay = "RNA", logfc.threshold = 0.58,min.pct = 0.25)
+
+
+# Reorder columns
+markers_cDC1 <- markers_cDC1[ , c("cluster", "gene", "pct.1", "pct.2", "avg_log2FC", "p_val", "p_val_adj")]
+
+# Filter genes with adjusted p value > 0.05
+sig_markers <- markers_cDC1 %>% 
+  filter(p_val_adj <= 0.05)
+
+table(sig_markers$cluster)
+
+
+# Define top 10 (by positive Log2FC)
+top10 <- sig_markers %>% 
+  group_by(cluster) %>% 
+  filter(avg_log2FC > 0) %>% 
+  top_n(n = 10, wt = avg_log2FC)
+
+# Heatmap of top 10 expression
+top10_heatmap <- DoHeatmap(seu_cDC1,
+                          features = top10$gene,
+                          assay = "RNA")
+top10_heatmap
+```
+
+# Focus on pDC
+Identification of pDC
+```{r}
+#create liste of cell id from cluster 6
+cell_Id_pDC<- seu_integrated@meta.data %>% filter(seurat_clusters=="14") %>% row.names()
+```
+
+Identification of cycling pDC
+```{r}
+stage_color<-c("gray32","steelblue3","orange1","red")
+
+# subset  to keep only cycling cells
+seu_pDC <- subset(seu_integrated,cells = cell_Id_pDC)
+
+seu_pDC
+
+seu_pDC<-NormalizeData(object = seu_pDC,
+                      normalization.method = "LogNormalize",
+                      scale.factor = 10000,
+                      assay="RNA")
+
+seu_pDC <- ScaleData(object = seu_pDC,
+                  features = rownames(seu_pDC),
+                  assay="RNA")
+
+seu_pDC <- FindVariableFeatures(object = seu_pDC,
+                             mean.function = ExpMean,
+                             dispersion.function = LogVMR)
+
+seu_pDC  <- RunPCA(object = seu_pDC ,
+                   pc.s = seu_pDC$var.genes, 
+                   verbose = FALSE)
+
+Elbowplot <- ElbowPlot(seu_pDC, ndims = 30)
+Elbowplot
+
+set.seed(123)
+
+seu_pDC <- FindNeighbors(seu_pDC, dims = 1:5)
+
+seu_pDC <- FindClusters(seu_pDC, resolution = 0.3)
+
+# UMAP
+seu_pDC<- RunUMAP(seu_pDC,
+                dims = 1:5)
+
+
+
+UMAP_pDC<- DimPlot(seu_pDC,
+        reduction = "umap",
+        label = TRUE,
+        label.size = 6,
+        pt.size = 0.5,
+        cols = alpha(cluster_17colors, 0.7))
+UMAP_pDC
+
+pdf("Focus_pDC//UMAP_pDC.pdf", width = 6, height = 5)
+UMAP_pDC
+dev.off()
+
+# Feat pDC markers
+feat_cycling_pDC <- FeaturePlot(object = seu_pDC,
+          features = c("Epcam","Ptprc"),
+          cols = feature_plot_colors,
+          ncol = 3,
+          pt.size = 0)
+  
+  feat_cycling_pDC
+  
+  
+# UMAP stages
+UMAP_pDC_stages<- DimPlot(seu_pDC,
+        reduction = "umap",
+        label = FALSE,
+        pt.size = 0.5,
+        group.by = "Stage",
+        cols = stage_color)
+UMAP_pDC_stages
+
+pdf("Focus_pDC/UMAP_pDC_stages.pdf", width = 6, height = 5)
+UMAP_pDC_stages
+dev.off()
+  
+
+# UMAP experiment_id
+UMAP_pDC_exp<- DimPlot(seu_pDC,
+        reduction = "umap",
+        label = FALSE,
+        pt.size = 1,
+        group.by = "Experiment_ID")
+UMAP_pDC_exp
+
+
+df_plot <- seu_pDC@meta.data %>% 
+  dplyr::select(c("seurat_clusters", "Stage"))
+
+df_plot <- table(df_plot$seurat_clusters, df_plot$Stage) %>% 
+  as.data.frame()
+
+names(df_plot) <- c("Cluster", "Origin", "n")
+
+# Percent stacked barplot 
+percent_distrib_origin_pDC <- ggplot(df_plot,
+                             aes(x = Cluster, y = n, fill = Origin)) +
+  geom_bar(position = "fill", stat = "identity") +
+  coord_flip() +
+  theme_minimal() +
+  labs(title = "Proportion of each stage per cluster", subtitle = "Percent stacked barchart",
+       x = "Seurat clusters", y = "n cells", fill = "") +
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE))+
+  scale_fill_manual(values = stage_color)
+
+percent_distrib_origin_pDC
+
+pdf("Focus_pDC/percent_distrib_origin.pdf", width = 6, height = 5)
+percent_distrib_origin
+dev.off()
+
+
+# Find markers stage specific
+Idents(object = seu_pDC)<-seu_pDC@meta.data$Stage
+markers_pDC<- FindAllMarkers(object = seu_pDC,assay = "RNA", logfc.threshold = 0.58,min.pct = 0.25)
+
+
+# Reorder columns
+markers_pDC <- markers_pDC[ , c("cluster", "gene", "pct.1", "pct.2", "avg_log2FC", "p_val", "p_val_adj")]
+
+# Filter genes with adjusted p value > 0.05
+sig_markers <- markers_pDC %>% 
+  filter(p_val_adj <= 0.05)
+
+table(sig_markers$cluster)
+
+
+# Define top 10 (by positive Log2FC)
+top10 <- sig_markers %>% 
+  group_by(cluster) %>% 
+  filter(avg_log2FC > 0) %>% 
+  top_n(n = 10, wt = avg_log2FC)
+
+# Heatmap of top 10 expression
+top10_heatmap <- DoHeatmap(seu_pDC,
+                          features = top10$gene,
+                          assay="RNA")
+top10_heatmap
+```
+

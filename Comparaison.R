@@ -17,6 +17,7 @@ data <- CreateSeuratObject(seu)
 
 data <- NormalizeData(data,verbose = FALSE)
 
+
 # Find and scale variable genes
 data <- FindVariableFeatures(data, selection.method = "vst", nfeatures = 2000, verbose = FALSE)
 data <- ScaleData(data,features = rownames(data))
@@ -214,9 +215,6 @@ ggplot(data@meta.data, aes(nCount_RNA, percent.mt, color = DoubletFinderPredicti
 #             decreasing = T)[1] + 1
 # min.pc <- min(co1, co2)
 # min.pc
-
-
-
 
 
 
