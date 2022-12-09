@@ -1,4 +1,4 @@
-setwd("/Users/mscavino/PreprocessingComparison/")
+setwd("/Users/mscavino/Projet/PreprocessingComparison/")
 
 
 ui <- fluidPage(

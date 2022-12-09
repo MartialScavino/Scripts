@@ -1,10 +1,11 @@
-setwd("/Users/mscavino/PreprocessingComparison/")
+setwd("/Users/mscavino/Projet/PreprocessingComparison/")
 
 
 
 
-seu <- Read10X("data/filtered_feature_bc_matrix/")
+seu <- Read10X("../data/filtered_feature_bc_matrix/")
 data <- CreateSeuratObject(seu)
+
 
 # Mets les noms des gènes en majuscule (à cause du cell cycle)
 rownames(data@assays$RNA@counts) <- toupper(rownames(data@assays$RNA@counts))
@@ -18,7 +19,6 @@ data <- CellCycleScoring(data, s.features = s.genes, g2m.features = g2m.genes, s
 
 
 data <- NormalizeData(data,verbose = FALSE)
-
 
 # Find and scale variable genes
 data <- FindVariableFeatures(data, selection.method = "vst", nfeatures = 2000, verbose = FALSE)
@@ -48,12 +48,6 @@ data@meta.data["TSNE_2"] <- data[["tsne"]]@cell.embeddings[,2]
 
 data@meta.data["PCA_1"] <- data[["pca"]]@cell.embeddings[,1]
 data@meta.data["PCA_2"] <- data[["pca"]]@cell.embeddings[,2]
-
-ggplot(data@meta.data, aes(TSNE_1, TSNE_2, color = nFeature_RNA)) +
-  geom_point() + scale_color_viridis_b()
-
-ggplot(data@meta.data, aes(TSNE_1, TSNE_2, color = percent.mt)) +
-  geom_point() + scale_color_viridis_c()
 
 # test <- data[["pca"]]@cell.embeddings
 # 
@@ -115,10 +109,7 @@ df["param3", "gamma_norm"] <- gamma_normal$param[3]
 df["param4", "gamma_norm"] <- gamma_normal$param[4]
 
 
-genes <- data.frame("gene" = rownames(data))
-
-
-
+genes <- data.frame(list(gene = rownames(data)))
 
 #################### AUTOTHRESHOLD
 methods <- c("IJDefault", "Huang", "Huang2", "Intermodes", "IsoData", "Li", 
@@ -141,7 +132,7 @@ getPalette <- colorRampPalette(brewer.pal(8, "Set1"))
 # markers_by_clusters <- FindAllMarkers(data)
 # saveRDS(markers_by_clusters, file = "Rds/Allmarkers")
 
-markers_by_clusters <- readRDS("RDS/Shiny/Allmarkers")
+markers_by_clusters <- readRDS("Rds/Shiny/Allmarkers")
 top5_markers <- markers_by_clusters %>% 
   group_by(cluster) %>% 
   slice_max(n = 5, order_by = avg_log2FC)
@@ -153,3 +144,4 @@ nExp_poi <- round(0.15*length(colnames(data)))
 data <- doubletFinder_v3(data, PCs = 1:50, pN = 0.25, pK = 0.01, nExp = nExp_poi, reuse.pANN = FALSE)
 
 colnames(data@meta.data)[length(colnames(data@meta.data))] = "DoubletFinderPrediction"
+

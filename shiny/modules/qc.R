@@ -58,13 +58,45 @@ DoubletFinderUI <- tabPanel("Doublet Finder", plotOutput("doublet_finder_mt"),
 
 PlotlyUI <- tabPanel("Plotly", plotlyOutput("test"))
 
-FeaturePlotUI <- tabPanel("FeaturePlot",
-                          textInput.typeahead("gene", placeholder = "Veuillez rentrer un gène", 
-                                              local = genes, valueKey = "gene",
-                                              tokens =  c(1:length(genes$gene)),
-                                              template = HTML("<p class='repo-language'>{{info}}</p> <p class='repo-gene'>{{gene}}</p>")),
-                          plotOutput("featureplot"))
+# FeaturePlotUI <- tabPanel("FeaturePlot",
+#                           textInput.typeahead("gene", placeholder = "Veuillez rentrer un gène",
+#                                               local = genes, valueKey = "gene",
+#                                               tokens =  c(1:length(genes$gene)),
+#                                               template = HTML("<p class='repo-language'>{{info}}</p> <p class='repo-gene'>{{gene}}</p>")),
+#                           plotOutput("featureplot"))
 
+# FeaturePlotUI <- tabPanel("FeaturePlot",
+#                           selectizeInput(
+#                             inputId = 'gene', label = 'Select Something',
+#                             choices = NULL,
+#                             selected = 1,
+#                             multiple = T
+#                           ),
+#                           textOutput("featureplot"))
+
+
+FeaturePlotSideBarUI <- sidebarPanel(
+    actionButton("reset", "Reinitialiser la signature", "danger"),
+    p(markdown('---')),
+    p("Gènes dans la signature"),
+    p("(cliquez sur un gène pour le retirer)"),
+    p(markdown('---')),
+    uiOutput("list_button"),
+    p(HTML("<br><br><br>")),
+    actionButton('plot_button', 'Calculer la figure',"primary"))
+  
+FeaturePlotMainUI <-mainPanel(
+  textInput.typeahead("gene", placeholder = "Veuillez rentrer un gène",
+                      local = genes, 
+                      valueKey = "gene",
+                      tokens =  c(1:length(genes$gene)),
+                      template = HTML("<p class='repo-language'>{{info}}</p> <p class='repo-gene'>{{gene}}</p>")
+  ),
+  
+    plotOutput(outputId = "test_features"))
+
+
+FeaturePlotUI <- tabPanel("FeaturePlot", FeaturePlotSideBarUI, FeaturePlotMainUI)
 
 
 ### Slider MT
@@ -94,7 +126,7 @@ SideBarPanelUI <- sidebarPanel(
   SliderFeaturesUI,
   NumberCellsOutUI
   
-)
+, width = 3)
 
 
 
@@ -248,12 +280,12 @@ HistCutoffSERVER <- function(input, output, session, data){
     cut_off = cutoff(to_cutoff)
     
     ggplot(data@meta.data, aes(x = nFeature_RNA)) + 
-      geom_histogram(aes(y = ..density..), bins = 100, fill = "#DDA0DD") + 
+      geom_histogram(aes(y = after_stat(density)), bins = 100, fill = "#DDA0DD") + 
       geom_density(color = "#8B0000") + 
-      stat_function(fun = p[1], n = 101, args = param1,linetype = "dashed", aes(color = "Première distribution"), alpha = 0.5, size = 0.7) +
-      stat_function(fun = p[2], n = 101, args = param2, linetype = "dashed", aes(color = "Deuxieme distribution"), alpha = 0.5, size = 0.7) +
+      stat_function(fun = c(p[1]), n = 101, args = param1,linetype = "dashed", aes(color = "Première distribution"), alpha = 0.5, linewidth = 0.7) +
+      stat_function(fun = c(p[2]), n = 101, args = param2, linetype = "dashed", aes(color = "Deuxieme distribution"), alpha = 0.5, linewidth = 0.7) +
       ylim(0, 0.000578) + 
-      geom_vline(xintercept = cut_off["Estimate"], col = 'black', linetype = 'dashed', size = 1) + 
+      geom_vline(xintercept = cut_off["Estimate"], col = 'black', linetype = 'dashed', linewidth = 1) + 
       geom_text(x = 7500, y = 0.0005, label = paste0("Valeur du cutoff : ", round(cut_off["Estimate"]))) + 
       scale_color_manual(name = "statistics", values = c("Première distribution" = "blue", "Deuxieme distribution" = "red", "Cutoff inféré" = "black")) + 
       theme_light()
@@ -261,7 +293,6 @@ HistCutoffSERVER <- function(input, output, session, data){
   })
   
 }
-
 
 
 HistAutoThresholdSERVER <- function(input, output, session, data){
@@ -303,19 +334,25 @@ DoubletFinderSERVER <- function(input, output, session, data){
   
 }
 
-
-
-# Feature Plot à partir d'un gène donné
-FeaturePlotSERVER <- function(input, output, session, data){
-  
-  output$featureplot <- renderPlot({
-    
-    if (input$gene == ""){}
-    else {FeaturePlot(data, features = input$gene)}
-    
-  })
-  
-}
+#Feature Plot à partir d'un gène donné
+# FeaturePlotSERVER <- function(input, output, session, data){
+# 
+#   output$featureplot <- renderPlot({
+# 
+#     if (input$gene == ""){}
+# 
+#     else if (length(input$gene < 2)){FeaturePlot(data, features = input$gene)}
+# 
+#      else{
+# 
+#        data <- AddModuleScore(data, features = input$gene)
+#        FeaturePlot(data, features = input$Cluster1)
+# 
+#        }
+# 
+#   })
+# 
+# }
 
 HeatmapSERVER <- function(input, output, session, data){
   
@@ -329,3 +366,96 @@ HeatmapSERVER <- function(input, output, session, data){
   
 }
 
+
+
+FeaturePlotSERVER <- function(input, output, session, data) {
+  
+  liste = reactiveValues(gene_name = character(0))
+  
+  # Ajoute un gène à la liste lorsqu'on écrit un nouveau gène
+  observeEvent(input$gene,{
+               
+               if (input$gene != "" & input$gene %in% liste$gene_name == FALSE){
+                 
+                 liste$gene_name <- c(liste$gene_name, input$gene)
+               }
+    })
+  
+  
+  # Créer un bouton pour chaque élément dans la liste de gène signature
+  observeEvent(liste$gene_name, output$list_button <- renderUI({
+    
+    if (length(liste$gene_name) > 0){
+      print("Création des boutons")
+      print(liste$gene_name)
+      tagList(
+        lapply(1:length(liste$gene_name), function(i){
+          
+          id1 <- paste0('slider_',liste$gene_name[i])
+          actionButton(id1, liste$gene_name[i], "info")
+        })
+      )
+    }
+    
+    else{
+      
+      output$list_button <- renderUI(actionButton('bla', "Aucun gène sélectionné", "inverse"))
+      
+    }
+  }))
+  
+  # Reset list quand on appuie sur le bouton
+  observeEvent(input$reset, liste$gene_name <- character(0))
+  
+  
+  # Make button removable when clicking on it
+  observe({
+    
+    print("Début de suppression des boutons")
+    print(liste$gene_name)
+    lapply(1:length(liste$gene_name), function(x){
+      
+      id <- paste0('slider_',liste$gene_name[x])
+      operator <- "$"
+      real_id <- do.call(operator, list(input, id))
+      
+      observeEvent(real_id, {
+        
+        if (liste$gene_name[x] != input$gene){ # Probleme à ce niveau
+        
+        print("Bouton pressé")
+        liste$gene_name <- liste$gene_name[-x]
+        print("Fin de suppression des boutons")
+        print(liste$gene_name)}})
+      
+    })
+  })
+  
+  # Calcule le plot quand le bouton est sélectionné 
+  # et quand le bouton change ou quand on ajoute ou enlève un gène de la liste
+  observeEvent(input$plot_button,{
+    
+    output$test_features <- renderPlot({ 
+      isolate({
+        if (length(liste$gene_name) == 1){
+          
+          p <- FeaturePlot(data, features = liste$gene_name[1])
+          return(p)
+        }
+        
+        else if (length(liste$gene_name) > 1){
+          
+          data <- AddModuleScore_UCell(obj = data, features = list(Signature = liste$gene_name))
+          p <- FeaturePlot(object = data, features = "Signature_UCell") + ggtitle("Signature")
+          return(p)
+        }
+        
+        else { return() }
+        
+      })
+    })
+    
+    
+  })
+  
+}   

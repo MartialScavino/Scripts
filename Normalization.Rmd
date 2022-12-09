@@ -49,7 +49,7 @@ provoquent des différences de couverture entre les librairies.
 
 ```{r}
 # Loading data
-seu <- Read10X("data/filtered_feature_bc_matrix/")
+seu <- Read10X("../data/filtered_feature_bc_matrix/")
 data <- CreateSeuratObject(seu)
 
 ```

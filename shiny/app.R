@@ -1,4 +1,4 @@
-setwd("/Users/mscavino/PreprocessingComparison/")
+setwd("/Users/mscavino/Projet/PreprocessingComparison/")
 
 
 
@@ -6,6 +6,7 @@ setwd("/Users/mscavino/PreprocessingComparison/")
 library(shiny)
 library(shinyWidgets)
 library(shinysky)
+library(shiny.fluent)
 
 library(Seurat)
 library(tidyverse)
@@ -18,6 +19,9 @@ library(DoubletFinder)
 library(cutoff)
 library(autothresholdr)
 library(RColorBrewer)
+library(data.table)
+library(UCell)
+
 
 
 # Sourcing modules

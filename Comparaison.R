@@ -1,4 +1,4 @@
-setwd("/Users/mscavino/PreprocessingComparison/")
+setwd("/Users/mscavino/Projet/PreprocessingComparison/")
 
 
 library(Seurat)
@@ -9,7 +9,7 @@ library(PCAtools)
 library(cutoff)
 
 
-seu <- Read10X("data/filtered_feature_bc_matrix/")
+seu <- Read10X("../data/filtered_feature_bc_matrix/")
 
 
 data <- CreateSeuratObject(seu)

@@ -1,4 +1,4 @@
-setwd("/Users/mscavino/PreprocessingComparison/")
+setwd("/Users/mscavino/Projet//PreprocessingComparison/")
 
 
 library(shiny)
@@ -16,7 +16,7 @@ library(DoubletFinder)
 library(cutoff)
 library(autothresholdr)
 
-seu <- Read10X("data/filtered_feature_bc_matrix/")
+seu <- Read10X("../data/filtered_feature_bc_matrix/")
 data <- CreateSeuratObject(seu)
 
 # Mets les noms des gènes en majuscule (à cause du cell cycle)

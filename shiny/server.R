@@ -1,4 +1,4 @@
-setwd("/Users/mscavino/PreprocessingComparison/")
+setwd("/Users/mscavino/Projet/PreprocessingComparison/")
 
 
 
@@ -42,6 +42,13 @@ server <- function(input, output, session) {
   
   # Feature Plot à partir d'un gène donné
   FeaturePlotSERVER(input, output, session, data)
+  
+  # Mise à jour du choix du gène
+  # observeEvent(input$gene,
+  #              updateSelectizeInput(session = session,
+  #                                   inputId = 'gene',
+  #                                   choices = genes[1:10, "gene"],
+  #                                   server = TRUE))
   
   ############################# FIN PARTIE QC 
   
