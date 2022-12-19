@@ -3,9 +3,10 @@ setwd("/Users/mscavino/Projet/PreprocessingComparison/")
 
 
 server <- function(input, output, session) {
-  
+  options(shiny.maxRequestSize=110*1024^2) 
   ######################################## PARTIE QC
   
+  if (exists("test")){
   # Violin plots
   ViolinSERVER(input, output, session, data)
   
@@ -49,6 +50,22 @@ server <- function(input, output, session) {
   #                                   inputId = 'gene',
   #                                   choices = genes[1:10, "gene"],
   #                                   server = TRUE))
+  
+  }
+  test <- reactiveValues(path = character(0))
+  
+  shinyDirChoose(input, 'folder', roots=c(wd='/'), allowDirCreate = F)
+  observeEvent(input$folder,{
+    if ("path" %in% names(input$folder)){
+      
+      test$path <- paste(c(unlist(input$folder$path)), collapse = "/")
+    
+    }
+    
+  })
+  
+  observeEvent(input$prepro, source("Scripts/shiny/modules/preprocessing.R"))
+  
   
   ############################# FIN PARTIE QC 
   

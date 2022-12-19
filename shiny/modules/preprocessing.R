@@ -2,8 +2,7 @@ setwd("/Users/mscavino/Projet/PreprocessingComparison/")
 
 
 
-
-seu <- Read10X("../data/filtered_feature_bc_matrix/")
+seu <- Read10X(test)
 data <- CreateSeuratObject(seu)
 
 
@@ -144,4 +143,19 @@ nExp_poi <- round(0.15*length(colnames(data)))
 data <- doubletFinder_v3(data, PCs = 1:50, pN = 0.25, pK = 0.01, nExp = nExp_poi, reuse.pANN = FALSE)
 
 colnames(data@meta.data)[length(colnames(data@meta.data))] = "DoubletFinderPrediction"
+
+
+
+
+data$nFeature_RNA <- as.double(data$nFeature_RNA)
+keep <- sapply(colnames(data@meta.data), function(names){
+  
+  check = c("integer", "character")
+  
+  if (typeof(data@meta.data[, names]) %in% check){ return(TRUE) }
+  
+  else{ return(FALSE) }
+  
+})
+choice = names(keep[keep == T])
 

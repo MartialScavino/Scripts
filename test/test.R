@@ -1,5 +1,5 @@
 
-
+icon_find("rocket")
 UI <- fluidPage(
   
   sidebarPanel(
@@ -22,7 +22,6 @@ UI <- fluidPage(
   mainPanel(
           
           plotOutput(outputId = "test_features")))
-
 
 
 
@@ -295,5 +294,180 @@ data <- AddModuleScore_UCell(data, features = list(Signatures = c("S100A8", "S10
 head(data)
 
 
+if (interactive()) {
+  
+  ui <- fluidPage(
+    actionButton("update", "Update other buttons"),
+    br(),
+    actionButton("goButton", "Go"),
+    br(),
+    actionButton("goButton2", "Go 2", icon = icon("area-chart")),
+    br(),
+    actionButton("goButton3", "Go 3")
+  )
+  
+  server <- function(input, output, session) {
+    observe({
+      req(input$update)
+      
+      # Updates goButton's label and icon
+      updateActionButton(session, "goButton",
+                         label = "New label",
+                         icon = icon("calendar"))
+      
+      # Leaves goButton2's label unchaged and
+      # removes its icon
+      updateActionButton(session, "goButton2",
+                         icon = character(0))
+      
+      # Leaves goButton3's icon, if it exists,
+      # unchaged and changes its label
+      updateActionButton(session, "goButton3",
+                         label = "New label 3")
+    })
+  }
+  
+  shinyApp(ui, server)
+}
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ui <- fluidPage(
+  useShinyjs(), 
+  titlePanel("Old Faithful Geyser Data"),
+  sidebarLayout(
+    sidebarPanel(
+      sliderInput("bins", "Number of bins:", min = 1, max = 50, value = 30)
+    ),
+    
+    # Show a plot of the generated distribution
+    mainPanel(
+      tags$head(tags$style(type="text/css", '
+            .loading {
+                display: inline-block;
+                overflow: hidden;
+                height: 1.3em;
+                margin-top: -0.3em;
+                line-height: 1.5em;
+                vertical-align: text-bottom;
+                box-sizing: border-box;
+            }
+            .loading.dots::after {
+                text-rendering: geometricPrecision;
+                content: "⠋\\A⠙\\A⠹\\A⠸\\A⠼\\A⠴\\A⠦\\A⠧\\A⠇\\A⠏";
+                animation: spin10 1s steps(10) infinite;
+                animation-duration: 1s;
+                animation-timing-function: steps(10);
+                animation-delay: 0s;
+                animation-iteration-count: infinite;
+                animation-direction: normal;
+                animation-fill-mode: none;
+                animation-play-state: running;
+                animation-name: spin10;
+            }
+            .loading::after {
+                display: inline-table;
+                white-space: pre;
+                text-align: left;
+            }
+            @keyframes spin10 { to { transform: translateY(-15.0em); } }
+            ')),
+      plotOutput("distPlot"),
+      actionButton("btnUpdate", span("Update", id = "UpdateAnimate", class = "loading dots"))
+    )
+  )
+)
+
+# Define server logic required to draw a histogram
+server <- function(input, output, session) {
+  UpdatePlot <- reactiveVal(1)
+  
+  output$distPlot <- renderPlot({
+    req(UpdatePlot())
+    
+    Sys.sleep(1) # just for show
+    # Button settings        
+    shinyjs::enable("btnUpdate")
+    shinyjs::removeClass(id = "UpdateAnimate", class = "loading dots")
+    
+    x    <- faithful[, 2]
+    isolate( # update chart ONLY after button press
+      bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    )
+    hist(x, breaks = bins, col = 'darkgray', border = 'white')
+  })
+  
+  
+  
+  observeEvent(input$btnUpdate, { # User requests update
+    UpdatePlot(NULL)
+    
+    shinyjs::addClass(id = "UpdateAnimate", class = "loading dots")
+    shinyjs::disable("btnUpdate")
+    
+    UpdatePlot(TRUE)
+  })
+  
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if (interactive()) {
+  ui <- fluidPage(
+    tags$h1("Search Input"),
+    br(),
+    searchInput(
+      inputId = "search", label = "Enter your text",
+      placeholder = "A placeholder",
+      btnSearch = icon("magnifying-glass"),
+      btnReset = icon("xmark"),
+      width = "450px"
+    ),
+    br(),
+    verbatimTextOutput(outputId = "res")
+  )
+  
+  server <- function(input, output, session) {
+    output$res <- renderPrint({
+      input$search
+    })
+  }
+  
+  shinyApp(ui = ui, server = server)
+}

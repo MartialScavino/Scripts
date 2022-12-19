@@ -1,12 +1,13 @@
 setwd("/Users/mscavino/Projet/PreprocessingComparison/")
 
 
-
 # Libraries
 library(shiny)
 library(shinyWidgets)
 library(shinysky)
 library(shiny.fluent)
+library(shinyjs)
+library(shinyFiles)
 
 library(Seurat)
 library(tidyverse)
@@ -21,7 +22,6 @@ library(autothresholdr)
 library(RColorBrewer)
 library(data.table)
 library(UCell)
-
 
 
 # Sourcing modules

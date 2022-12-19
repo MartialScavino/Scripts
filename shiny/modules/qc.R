@@ -1,16 +1,38 @@
 ######################### UI ############################
 
-data$nFeature_RNA <- as.double(data$nFeature_RNA)
-keep <- sapply(colnames(data@meta.data), function(names){
-  
-  check = c("integer", "character")
-  
-  if (typeof(data@meta.data[, names]) %in% check){ return(TRUE) }
-  
-  else{ return(FALSE) }
-  
-})
-choice = names(keep[keep == T])
+
+
+headUI <- tags$head(tags$style(type="text/css", '
+            .loading {
+                display: inline-block;
+                overflow: hidden;
+                height: 1.3em;
+                margin-top: -0.3em;
+                line-height: 1.5em;
+                vertical-align: text-bottom;
+                box-sizing: border-box;
+            }
+            .loading.dots::after {
+                text-rendering: geometricPrecision;
+                content: "⠋\\A⠙\\A⠹\\A⠸\\A⠼\\A⠴\\A⠦\\A⠧\\A⠇\\A⠏";
+                animation: spin10 1s steps(10) infinite;
+                animation-duration: 1s;
+                animation-timing-function: steps(10);
+                animation-delay: 0s;
+                animation-iteration-count: infinite;
+                animation-direction: normal;
+                animation-fill-mode: none;
+                animation-play-state: running;
+                animation-name: spin10;
+            }
+            .loading::after {
+                display: inline-table;
+                white-space: pre;
+                text-align: left;
+            }
+            @keyframes spin10 { to { transform: translateY(-15.0em); } }
+            '))
+if (exists("test")){
 
 
 VisualisationUI <- tabPanel("Visualisation",
@@ -83,7 +105,7 @@ FeaturePlotSideBarUI <- sidebarPanel(
     p(markdown('---')),
     uiOutput("list_button"),
     p(HTML("<br><br><br>")),
-    actionButton('plot_button', 'Calculer la figure',"primary"))
+    actionButton('plot_button', span('Calculer la figure', id="UpdateAnimate", class=""), "primary"))
   
 FeaturePlotMainUI <-mainPanel(
   textInput.typeahead("gene", placeholder = "Veuillez rentrer un gène",
@@ -91,9 +113,8 @@ FeaturePlotMainUI <-mainPanel(
                       valueKey = "gene",
                       tokens =  c(1:length(genes$gene)),
                       template = HTML("<p class='repo-language'>{{info}}</p> <p class='repo-gene'>{{gene}}</p>")
-  ),
-  
-    plotOutput(outputId = "test_features"))
+                      ),
+  plotOutput(outputId = "test_features"))
 
 
 FeaturePlotUI <- tabPanel("FeaturePlot", FeaturePlotSideBarUI, FeaturePlotMainUI)
@@ -370,29 +391,38 @@ HeatmapSERVER <- function(input, output, session, data){
 
 FeaturePlotSERVER <- function(input, output, session, data) {
   
-  liste = reactiveValues(gene_name = character(0))
+  liste = reactiveValues(df = data.frame(list(gene_name = character(0), show_button = character(0))))
   
   # Ajoute un gène à la liste lorsqu'on écrit un nouveau gène
   observeEvent(input$gene,{
                
-               if (input$gene != "" & input$gene %in% liste$gene_name == FALSE){
-                 
-                 liste$gene_name <- c(liste$gene_name, input$gene)
+               if (input$gene != "" & input$gene %in% liste$df$gene_name == FALSE){
+                 liste$df[nrow(liste$df) + 1,] <- c(input$gene, TRUE)
+               }
+                
+               else if (input$gene != "" & input$gene %in% liste$df$gene_name == TRUE){
+                 if (liste$df[which(liste$df$gene_name == input$gene), "show_button"] == FALSE){
+                   
+                   liste$df[which(liste$df$gene_name == input$gene), "show_button"] <- TRUE
+                   
+                 }
                }
     })
   
   
   # Créer un bouton pour chaque élément dans la liste de gène signature
-  observeEvent(liste$gene_name, output$list_button <- renderUI({
+  observeEvent(liste$df$gene_name, output$list_button <- renderUI({
     
-    if (length(liste$gene_name) > 0){
-      print("Création des boutons")
-      print(liste$gene_name)
+    if (length(liste$df$gene_name) > 0){
       tagList(
-        lapply(1:length(liste$gene_name), function(i){
+        lapply(1:length(liste$df$gene_name), function(i){
           
-          id1 <- paste0('slider_',liste$gene_name[i])
-          actionButton(id1, liste$gene_name[i], "info")
+          if (liste$df$show_button[i] == TRUE){
+            
+            id1 <- paste0('slider_',liste$df$gene_name[i])
+            actionButton(id1, liste$df$gene_name[i], "info", 
+                         onclick = "Shiny.onInputChange('myclick', {id : this.id, val : this})")
+          }
         })
       )
     }
@@ -405,52 +435,53 @@ FeaturePlotSERVER <- function(input, output, session, data) {
   }))
   
   # Reset list quand on appuie sur le bouton
-  observeEvent(input$reset, liste$gene_name <- character(0))
-  
+  observeEvent(input$reset, {
+    
+    liste$df <- data.frame(list(gene_name = character(0), show_button = character(0)))
+    
+    })
   
   # Make button removable when clicking on it
-  observe({
+      observeEvent(input$myclick, {
+
+        id <- strsplit(input$myclick$id, "_")[[1]][2]
+        liste$df[which(liste$df$gene_name == id), "show_button"] <- FALSE
+        
+      })
     
-    print("Début de suppression des boutons")
-    print(liste$gene_name)
-    lapply(1:length(liste$gene_name), function(x){
-      
-      id <- paste0('slider_',liste$gene_name[x])
-      operator <- "$"
-      real_id <- do.call(operator, list(input, id))
-      
-      observeEvent(real_id, {
-        
-        if (liste$gene_name[x] != input$gene){ # Probleme à ce niveau
-        
-        print("Bouton pressé")
-        liste$gene_name <- liste$gene_name[-x]
-        print("Fin de suppression des boutons")
-        print(liste$gene_name)}})
-      
-    })
-  })
-  
   # Calcule le plot quand le bouton est sélectionné 
-  # et quand le bouton change ou quand on ajoute ou enlève un gène de la liste
   observeEvent(input$plot_button,{
     
-    output$test_features <- renderPlot({ 
+    output$test_features <- renderPlot({
+      
       isolate({
-        if (length(liste$gene_name) == 1){
+        
+        liste_gene_plot <- liste$df[which(liste$df$show_button == TRUE), "gene_name"]
+        
+        if (length(liste_gene_plot) == 1){
           
-          p <- FeaturePlot(data, features = liste$gene_name[1])
+          p <- FeaturePlot(data, features = liste_gene_plot)
           return(p)
         }
         
-        else if (length(liste$gene_name) > 1){
+        else if (length(liste_gene_plot) > 1){
           
-          data <- AddModuleScore_UCell(obj = data, features = list(Signature = liste$gene_name))
+          shinyjs::addClass(id = "UpdateAnimate", class = "loading dots")
+          shinyjs::disable("plot_button")
+          
+          data <- AddModuleScore_UCell(obj = data, features = list(Signature = liste_gene_plot))
           p <- FeaturePlot(object = data, features = "Signature_UCell") + ggtitle("Signature")
+          
+          shinyjs::enable("plot_button")
+          shinyjs::removeClass(id = "UpdateAnimate", class = "loading dots")
           return(p)
+          
         }
+        
+        
         
         else { return() }
+
         
       })
     })
@@ -458,4 +489,5 @@ FeaturePlotSERVER <- function(input, output, session, data) {
     
   })
   
-}   
+} 
+}
