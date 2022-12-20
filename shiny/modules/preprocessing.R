@@ -1,8 +1,6 @@
 setwd("/Users/mscavino/Projet/PreprocessingComparison/")
 
-
-
-seu <- Read10X(test)
+seu <- Read10X("../data/filtered_feature_bc_matrix/")
 data <- CreateSeuratObject(seu)
 
 

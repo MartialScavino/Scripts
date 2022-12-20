@@ -32,8 +32,6 @@ headUI <- tags$head(tags$style(type="text/css", '
             }
             @keyframes spin10 { to { transform: translateY(-15.0em); } }
             '))
-if (exists("test")){
-
 
 VisualisationUI <- tabPanel("Visualisation",
                             column(6,
@@ -490,4 +488,3 @@ FeaturePlotSERVER <- function(input, output, session, data) {
   })
   
 } 
-}

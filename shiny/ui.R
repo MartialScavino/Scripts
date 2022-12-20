@@ -9,14 +9,6 @@ ui <- fluidPage(
   # Titre de l'application
   titlePanel("Comparaison des différents paramètres de preprocessing"),
   navbarPage("My Application",
-             tabPanel("Données",
-                      
-                      shinyDirButton('folder', 'Select a folder', 'Please select a folder', FALSE),
-                      
-                      actionButton("prepro", "Lancer prepro")
-                      
-                      ),
-             if (exists("test")){
              tabPanel("QC",      
                       
                       SideBarPanelUI,
@@ -36,7 +28,7 @@ ui <- fluidPage(
                           
                         )
                       ) #Fin de la partie QC
-             
+             ,
              tabPanel("Normalisation",
                       
                       
@@ -46,7 +38,6 @@ ui <- fluidPage(
                       
                       
              ) # Fin de la partie normalisation
-             }
   ) #Fin du navBarPage
   
 ) #Fin du fluid page
