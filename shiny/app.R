@@ -30,5 +30,5 @@ library(UCell)
 source("Scripts/shiny/modules/preprocessing.R")
 source("Scripts/shiny/modules/qc.R")
 
-runApp("Scripts/shiny")
 
+runApp("Scripts/shiny")

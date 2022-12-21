@@ -1,12 +1,18 @@
 setwd("/Users/mscavino/Projet/PreprocessingComparison/")
 
-seu <- Read10X("../data/filtered_feature_bc_matrix/")
-data <- CreateSeuratObject(seu)
+# seu <- Read10X("../data/filtered_feature_bc_matrix/")
+# data <- CreateSeuratObject(seu)
 
+data <- readRDS("../Colonim/Rds/CD45m_raw_data.rds")
 
 # Mets les noms des gènes en majuscule (à cause du cell cycle)
 rownames(data@assays$RNA@counts) <- toupper(rownames(data@assays$RNA@counts))
 rownames(data@assays$RNA@data) <- toupper(rownames(data@assays$RNA@data))
+
+
+
+data <- NormalizeData(data,verbose = FALSE)
+
 
 # Cell cycle
 s.genes <- cc.genes$s.genes
@@ -15,7 +21,7 @@ g2m.genes <- cc.genes$g2m.genes
 data <- CellCycleScoring(data, s.features = s.genes, g2m.features = g2m.genes, set.ident = TRUE)
 
 
-data <- NormalizeData(data,verbose = FALSE)
+
 
 # Find and scale variable genes
 data <- FindVariableFeatures(data, selection.method = "vst", nfeatures = 2000, verbose = FALSE)
