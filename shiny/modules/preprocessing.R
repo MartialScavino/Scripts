@@ -1,9 +1,29 @@
-setwd("/Users/mscavino/Projet/PreprocessingComparison/")
+format <- ""
 
-# seu <- Read10X("../data/filtered_feature_bc_matrix/")
-# data <- CreateSeuratObject(seu)
+while (format != '1' & format != '2'){
+  
+  user.input <- dlg_input("Ouvrir un dossier ou un fichier ?\n
+1 : Dossier = filtered_feature_bc_matrix\n2 : Fichier = RDS\n
+Repondez par 1 ou 2")
+  format <- user.input$res
+}
 
-data <- readRDS("../Colonim/Rds/CD45m_raw_data.rds")
+switch(format, 
+       "1" = {
+          path <- rstudioapi::selectDirectory()
+          print("Calcul en cours, cela peut prendre quelques minutes")
+          seu <- Read10X(path)
+          data <- CreateSeuratObject(seu)
+      
+        },
+       "2" = {
+          path <- rstudioapi::selectFile(filter = "RDS Files (*.rds)")
+          print("Calcul en cours, cela peut prendre quelques minutes")
+          data <- readRDS(path)
+           
+        })
+
+
 
 # Mets les noms des gènes en majuscule (à cause du cell cycle)
 rownames(data@assays$RNA@counts) <- toupper(rownames(data@assays$RNA@counts))
@@ -65,68 +85,67 @@ data@meta.data["PCA_2"] <- data[["pca"]]@cell.embeddings[,2]
 
 
 ################## CUTOFF ##########################################
-
-weibull_normal = cutoff::em(data$nFeature_RNA, "weibull", "normal")
-normal_normal = cutoff::em(data$nFeature_RNA, "normal", "normal")
-gamma_normal = cutoff::em(data$nFeature_RNA, "gamma", "normal")
-
-df = data.frame()
-df["fun1", "wei_norm"] <- "dweibull"
-df['fun2', "wei_norm"] <- "dnorm"
-
-df["param1_name", "wei_norm"] <- "shape"
-df["param2_name", "wei_norm"] <- "scale"
-df["param3_name", "wei_norm"] <- "mean"
-df["param4_name", "wei_norm"] <- "sd"
-
-df["param1", "wei_norm"] <- weibull_normal$param[1]
-df["param2", "wei_norm"] <- weibull_normal$param[2]
-df["param3", "wei_norm"] <- weibull_normal$param[3]
-df["param4", "wei_norm"] <- weibull_normal$param[4]
-
-
-df["fun1", "norm_norm"] <- "dnorm"
-df['fun2', "norm_norm"] <- "dnorm"
-
-df["param1_name", "norm_norm"] <- "mean"
-df["param2_name", "norm_norm"] <- "sd"
-df["param3_name", "norm_norm"] <- "mean"
-df["param4_name", "norm_norm"] <- "sd"
-
-df["param1", "norm_norm"] <- normal_normal$param[1]
-df["param2", "norm_norm"] <- normal_normal$param[2]
-df["param3", "norm_norm"] <- normal_normal$param[3]
-df["param4", "norm_norm"] <- normal_normal$param[4]
-
-df["fun1", "gamma_norm"] <- "dgamma"
-df['fun2', "gamma_norm"] <- "dnorm"
-
-df["param1_name", "gamma_norm"] <- "shape"
-df["param2_name", "gamma_norm"] <- "rate"
-df["param3_name", "gamma_norm"] <- "mean"
-df["param4_name", "gamma_norm"] <- "sd"
-
-df["param1", "gamma_norm"] <- gamma_normal$param[1]
-df["param2", "gamma_norm"] <- gamma_normal$param[2]
-df["param3", "gamma_norm"] <- gamma_normal$param[3]
-df["param4", "gamma_norm"] <- gamma_normal$param[4]
-
-
-genes <- data.frame(list(gene = rownames(data)))
-
-#################### AUTOTHRESHOLD
-methods <- c("IJDefault", "Huang", "Huang2", "Intermodes", "IsoData", "Li", 
-             "MaxEntropy", "Mean", "MinErrorI", "Minimum",
-             "Moments", "Otsu", "Percentile", "RenyiEntropy", "Shanbhag",
-             "Triangle", "Yen")
-
-
-auto_thresholds <- sapply(methods,
-                          function(x) tryCatch(autothresholdr::auto_thresh(data$nFeature_RNA, x), 
-                                               error=function(e) NA))
-
-methods_df <- data.frame(method = methods, x = auto_thresholds)
-getPalette <- colorRampPalette(brewer.pal(8, "Set1"))
+# 
+# weibull_normal = cutoff::em(data$nFeature_RNA, "weibull", "normal")
+# normal_normal = cutoff::em(data$nFeature_RNA, "normal", "normal")
+# gamma_normal = cutoff::em(data$nFeature_RNA, "gamma", "normal")
+# 
+# df = data.frame()
+# df["fun1", "wei_norm"] <- "dweibull"
+# df['fun2', "wei_norm"] <- "dnorm"
+# 
+# df["param1_name", "wei_norm"] <- "shape"
+# df["param2_name", "wei_norm"] <- "scale"
+# df["param3_name", "wei_norm"] <- "mean"
+# df["param4_name", "wei_norm"] <- "sd"
+# 
+# df["param1", "wei_norm"] <- weibull_normal$param[1]
+# df["param2", "wei_norm"] <- weibull_normal$param[2]
+# df["param3", "wei_norm"] <- weibull_normal$param[3]
+# df["param4", "wei_norm"] <- weibull_normal$param[4]
+# 
+# 
+# df["fun1", "norm_norm"] <- "dnorm"
+# df['fun2', "norm_norm"] <- "dnorm"
+# 
+# df["param1_name", "norm_norm"] <- "mean"
+# df["param2_name", "norm_norm"] <- "sd"
+# df["param3_name", "norm_norm"] <- "mean"
+# df["param4_name", "norm_norm"] <- "sd"
+# 
+# df["param1", "norm_norm"] <- normal_normal$param[1]
+# df["param2", "norm_norm"] <- normal_normal$param[2]
+# df["param3", "norm_norm"] <- normal_normal$param[3]
+# df["param4", "norm_norm"] <- normal_normal$param[4]
+# 
+# df["fun1", "gamma_norm"] <- "dgamma"
+# df['fun2', "gamma_norm"] <- "dnorm"
+# 
+# df["param1_name", "gamma_norm"] <- "shape"
+# df["param2_name", "gamma_norm"] <- "rate"
+# df["param3_name", "gamma_norm"] <- "mean"
+# df["param4_name", "gamma_norm"] <- "sd"
+# 
+# df["param1", "gamma_norm"] <- gamma_normal$param[1]
+# df["param2", "gamma_norm"] <- gamma_normal$param[2]
+# df["param3", "gamma_norm"] <- gamma_normal$param[3]
+# df["param4", "gamma_norm"] <- gamma_normal$param[4]
+# 
+# 
+# 
+# #################### AUTOTHRESHOLD
+# methods <- c("IJDefault", "Huang", "Huang2", "Intermodes", "IsoData", "Li", 
+#              "MaxEntropy", "Mean", "MinErrorI", "Minimum",
+#              "Moments", "Otsu", "Percentile", "RenyiEntropy", "Shanbhag",
+#              "Triangle", "Yen")
+# 
+# 
+# auto_thresholds <- sapply(methods,
+#                           function(x) tryCatch(autothresholdr::auto_thresh(data$nFeature_RNA, x), 
+#                                                error=function(e) NA))
+# 
+# methods_df <- data.frame(method = methods, x = auto_thresholds)
+# getPalette <- colorRampPalette(brewer.pal(8, "Set1"))
 
 
 
@@ -135,7 +154,11 @@ getPalette <- colorRampPalette(brewer.pal(8, "Set1"))
 # markers_by_clusters <- FindAllMarkers(data)
 # saveRDS(markers_by_clusters, file = "Rds/Allmarkers")
 
-markers_by_clusters <- readRDS("Rds/Shiny/Allmarkers")
+
+genes <- data.frame(list(gene = rownames(data)))
+
+markers_by_clusters <- readRDS("../../Rds/Shiny/Allmarkers")
+
 top5_markers <- markers_by_clusters %>% 
   group_by(cluster) %>% 
   slice_max(n = 5, order_by = avg_log2FC)
@@ -143,10 +166,10 @@ top5_markers <- markers_by_clusters %>%
 
 
 ######################@ Doublet Finder
-nExp_poi <- round(0.15*length(colnames(data)))
-data <- doubletFinder_v3(data, PCs = 1:50, pN = 0.25, pK = 0.01, nExp = nExp_poi, reuse.pANN = FALSE)
-
-colnames(data@meta.data)[length(colnames(data@meta.data))] = "DoubletFinderPrediction"
+# nExp_poi <- round(0.15*length(colnames(data)))
+# data <- doubletFinder_v3(data, PCs = 1:50, pN = 0.25, pK = 0.01, nExp = nExp_poi, reuse.pANN = FALSE)
+# 
+# colnames(data@meta.data)[length(colnames(data@meta.data))] = "DoubletFinderPrediction"
 
 
 
@@ -162,4 +185,3 @@ keep <- sapply(colnames(data@meta.data), function(names){
   
 })
 choice = names(keep[keep == T])
-

@@ -1,12 +1,12 @@
 FeaturePlotSideBarUI <- sidebarPanel(
-  actionButton("reset", "Reinitialiser la signature", "danger"),
+  actionButton("reset", "Reinitialiser la signature", styleclass = "danger"),
   p(markdown('---')),
   p("Gènes dans la signature"),
   p("(cliquez sur un gène pour le retirer)"),
-  p(markdown('---')),
   uiOutput("list_button"),
+  p(markdown('---')),
   p(HTML("<br><br><br>")),
-  actionButton('plot_button', span('Calculer la figure', id="UpdateAnimate", class=""), "primary"))
+  actionButton('plot_button', span('Calculer la figure', id="UpdateAnimate", class=""), styleclass = "primary"))
 
 FeaturePlotMainUI <-mainPanel(
   textInput.typeahead("gene", placeholder = "Veuillez rentrer un gène",
@@ -19,8 +19,6 @@ FeaturePlotMainUI <-mainPanel(
 
 
 FeaturePlotUI <- tabPanel("FeaturePlot", FeaturePlotSideBarUI, FeaturePlotMainUI)
-
-
 
 
 
@@ -115,16 +113,10 @@ FeaturePlotSERVER <- function(input, output, session, data) {
           return(p)
           
         }
-        
-        
-        
+      
         else { return() }
-        
-        
+      
       })
     })
-    
-    
   })
-  
 } 

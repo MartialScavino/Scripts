@@ -1,32 +1,6 @@
-setwd("/Users/mscavino/Projet/PreprocessingComparison/")
-
-
-
-
 server <- function(input, output, session) {
-  # options(shiny.maxRequestSize=110*1024^2) 
-  ######################################## PARTIE QC
-  
-  # test <- reactiveValues(path = character(0))
-  # 
-  # shinyDirChoose(input, 'folder', roots=c(wd='/'), allowDirCreate = F)
-  # observeEvent(input$folder,{
-  #   if ("path" %in% names(input$folder)){
-  #     
-  #     test$path <- paste(c(unlist(input$folder$path)), collapse = "/")
-  #     print(test$path)
-  #     
-  #     
-  #   }
-  #   
-  # })
-  # 
-  # observeEvent(input$prepro, {
-  #   OK <- preprocessing(test$path)
-  #   source("Scripts/shiny/modules/qc.R")})
   
   
-
   # Violin plots
   ViolinSERVER(input, output, session, data)
   
@@ -52,29 +26,18 @@ server <- function(input, output, session) {
   HistSERVER(input, output, session, data)
   
   # Histogramme et density plot des % mt avec les cutoff calculés automatiquements avec cutoff
-  HistCutoffSERVER(input, output, session, data)
+  # HistCutoffSERVER(input, output, session, data)
   
   # Histogramme et density plot des % mt avec les cutoff calculés automatiquements avec autothresholdr
-  HistAutoThresholdSERVER(input, output, session, data)
+  # HistAutoThresholdSERVER(input, output, session, data)
   
   
   # Scatter plot pout voir les Doublets prédits par doublet finder 
-  DoubletFinderSERVER(input, output, session, data)
+  # DoubletFinderSERVER(input, output, session, data)
   
   # Feature Plot à partir d'un gène donné
   FeaturePlotSERVER(input, output, session, data)
   
-  # Mise à jour du choix du gène
-  # observeEvent(input$gene,
-  #              updateSelectizeInput(session = session,
-  #                                   inputId = 'gene',
-  #                                   choices = genes[1:10, "gene"],
-  #                                   server = TRUE))
-  
-
-  
-  
   ############################# FIN PARTIE QC 
-  
   
 }

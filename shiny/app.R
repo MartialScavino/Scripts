@@ -1,34 +1,16 @@
-setwd("/Users/mscavino/Projet/PreprocessingComparison/")
+if (!require("rstudioapi")) install.packages("rstudioapi")
+
+# Setting working directory
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 
 
-# Libraries
-library(shiny)
-library(shinyWidgets)
-library(shinysky)
-library(shiny.fluent)
-library(shinyjs)
-library(shinyFiles)
-
-library(Seurat)
-library(tidyverse)
-library(dplyr)
-library(stringr)
-library(plotly)
-library(cowplot)
-library(viridis)
-library(DoubletFinder)
-library(cutoff)
-library(autothresholdr)
-library(RColorBrewer)
-library(data.table)
-library(UCell)
+# Installing packages
+source("modules/dependencies.R")
 
 
 # Sourcing modules
+source("modules/preprocessing.R")
+source("modules/qc.R")
 
 
-source("Scripts/shiny/modules/preprocessing.R")
-source("Scripts/shiny/modules/qc.R")
-
-
-runApp("Scripts/shiny")
+runApp(".")

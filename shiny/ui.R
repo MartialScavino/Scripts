@@ -1,6 +1,3 @@
-setwd("/Users/mscavino/Projet/PreprocessingComparison/")
-
-
 ui <- fluidPage(
                 # Sert à faire une animation sur le bouton du feature plot pendant que ça charge
                 useShinyjs(), 
@@ -9,6 +6,7 @@ ui <- fluidPage(
   # Titre de l'application
   titlePanel("Comparaison des différents paramètres de preprocessing"),
   navbarPage("My Application",
+             
              tabPanel("QC",      
                       
                       SideBarPanelUI,
@@ -21,14 +19,13 @@ ui <- fluidPage(
                             HeatmapUI,
                             ViolinUI,
                             HistUI,
-                            ComputedThresholdUI,
-                            DoubletFinderUI,
+                            # ComputedThresholdUI,
+                            # DoubletFinderUI,
                             PlotlyUI,
                             FeaturePlotUI) #Fin tabsetpanel
                           
                         )
-                      ) #Fin de la partie QC
-             ,
+                      ),#Fin de la partie QC
              tabPanel("Normalisation",
                       
                       

@@ -8,7 +8,7 @@ SliderMtUI <-  sliderInput("mt", "Choisissez le pourcentage de gène mitochondri
 SliderFeaturesUI <- sliderInput("features", "Choissisez le nombre de gène exprimé voulu dans chaque cellule",
                                 min = 0,
                                 max = max(data$nFeature_RNA),
-                                value = c(600, 10000), 
+                                value = c(600, max(data$nFeature_RNA)), 
                                 step = 50)
 
 NumberCellsOutUI <- textOutput("texte")

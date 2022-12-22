@@ -1,15 +1,15 @@
 
 
-source("Scripts/shiny/modules/QC/ComputedThreshold.R")
-source("Scripts/shiny/modules/QC/DoubletFinder.R")
-source("Scripts/shiny/modules/QC/FeaturePlot.R")
-source("Scripts/shiny/modules/QC/Heatmap.R")
-source("Scripts/shiny/modules/QC/Hist.R")
-source("Scripts/shiny/modules/QC/Plotly.R")
-source("Scripts/shiny/modules/QC/Scatter.R")
-source("Scripts/shiny/modules/QC/SideBarPanel.R")
-source("Scripts/shiny/modules/QC/Violin.R")
-source("Scripts/shiny/modules/QC/Visualisation.R")
+# source("modules/QC/ComputedThreshold.R")
+# source("modules/QC/DoubletFinder.R")
+source("modules/QC/FeaturePlot.R")
+source("modules/QC/Heatmap.R")
+source("modules/QC/Hist.R")
+source("modules/QC/Plotly.R")
+source("modules/QC/Scatter.R")
+source("modules/QC/SideBarPanel.R")
+source("modules/QC/Violin.R")
+source("modules/QC/Visualisation.R")
 
 
 
