@@ -1,2 +1,2 @@
 # Scripts
-Repository containing scripts for is single cell preprocessing comparison
+Repository containing scripts for single cell preprocessing comparison
