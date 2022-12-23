@@ -12,3 +12,17 @@ packages <- c("BiocManager","shiny", "shinyWidgets", "shiny.fluent", "shinyjs", 
 
 pacman::p_load(char = packages)
 
+df <- installed.packages()
+poubelle <- sapply(packages, function(x){
+  
+  if (!x %in% rownames(df)){
+    
+    print(paste0("Le Package ", x, " n'a pas été installé correctement"))
+    return(0) 
+  }
+  
+  return(1)
+  
+  
+})
+rm(poubelle)
